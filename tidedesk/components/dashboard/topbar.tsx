@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+import { useSyncExternalStore } from "react";
 import { useSession, signOut } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import {
@@ -10,10 +12,19 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Menu, LogOut } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Menu, LogOut, User } from "lucide-react";
+
+function useMounted() {
+  return useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false
+  );
+}
 
 export function DashboardTopbar({ onOpenNav }: { onOpenNav: () => void }) {
+  const mounted = useMounted();
   const { data } = useSession();
   const name = data?.user?.name ?? "User";
   const email = data?.user?.email ?? "";
@@ -43,6 +54,9 @@ export function DashboardTopbar({ onOpenNav }: { onOpenNav: () => void }) {
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" className="h-10 gap-2 px-2">
             <Avatar className="size-8">
+              {mounted && data?.user?.image ? (
+                <AvatarImage src={data.user.image} alt={name} />
+              ) : null}
               <AvatarFallback>{initials || "U"}</AvatarFallback>
             </Avatar>
             <div className="hidden flex-col items-start md:flex">
@@ -56,6 +70,12 @@ export function DashboardTopbar({ onOpenNav }: { onOpenNav: () => void }) {
         <DropdownMenuContent align="end" className="w-56">
           <DropdownMenuLabel>Account</DropdownMenuLabel>
           <DropdownMenuSeparator />
+          <DropdownMenuItem asChild>
+            <Link href="/settings" className="flex cursor-pointer items-center gap-2">
+              <User className="size-4" />
+              Upload profile photo
+            </Link>
+          </DropdownMenuItem>
           <DropdownMenuItem
             onClick={() => signOut({ callbackUrl: "/login" })}
             className="gap-2"

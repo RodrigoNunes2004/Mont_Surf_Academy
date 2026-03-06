@@ -56,6 +56,7 @@ export default function FeaturesPage() {
               width={40}
               height={40}
               className="shrink-0"
+              style={{ width: "auto", height: "auto" }}
             />
             <span className="font-semibold text-lg">TideDesk</span>
           </Link>

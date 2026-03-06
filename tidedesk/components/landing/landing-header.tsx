@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useSyncExternalStore, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Menu } from "lucide-react";
@@ -19,7 +19,12 @@ const navLinks = [
   { href: "/pricing", label: "Pricing" },
 ];
 
+function useMounted() {
+  return useSyncExternalStore(() => () => {}, () => true, () => false);
+}
+
 export function LandingHeader() {
+  const mounted = useMounted();
   const [open, setOpen] = useState(false);
 
   return (
@@ -32,6 +37,7 @@ export function LandingHeader() {
             width={40}
             height={40}
             className="shrink-0"
+            style={{ width: "auto", height: "auto" }}
           />
           <span className="font-semibold text-lg">TideDesk</span>
         </Link>
@@ -59,7 +65,8 @@ export function LandingHeader() {
           <StartTrialButton />
         </nav>
 
-        {/* Mobile menu button */}
+        {/* Mobile menu - only render after mount to avoid Radix aria-controls hydration mismatch */}
+        {mounted && (
         <Sheet open={open} onOpenChange={setOpen}>
           <SheetTrigger asChild>
             <Button
@@ -106,6 +113,11 @@ export function LandingHeader() {
             </nav>
           </SheetContent>
         </Sheet>
+        )}
+        {/* Placeholder to prevent layout shift before Sheet mounts */}
+        {!mounted && (
+          <div className="md:hidden size-10 shrink-0" aria-hidden />
+        )}
       </div>
     </header>
   );

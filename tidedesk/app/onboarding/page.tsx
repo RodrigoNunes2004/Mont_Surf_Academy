@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
+import { useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
 import Image from "next/image";
@@ -33,12 +33,6 @@ function OnboardingForm() {
   const [currency, setCurrency] = useState("NZD");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (!sessionId) {
-      setError("Missing checkout session. Please complete the checkout first.");
-    }
-  }, [sessionId]);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -102,6 +96,7 @@ function OnboardingForm() {
           width={120}
           height={40}
           className="object-contain"
+          style={{ width: "auto", height: "auto" }}
         />
         <Card className="w-full max-w-md">
           <CardHeader>
@@ -131,6 +126,7 @@ function OnboardingForm() {
         width={120}
         height={40}
         className="object-contain"
+        style={{ width: "auto", height: "auto" }}
       />
       <Card className="w-full max-w-md">
         <CardHeader>

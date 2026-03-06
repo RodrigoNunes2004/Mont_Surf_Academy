@@ -51,6 +51,7 @@ export default function LoginPage() {
           width={384}
           height={96}
           className="w-full object-contain"
+          style={{ width: "auto", height: "auto" }}
         />
       </div>
       <Card className="w-full max-w-sm">

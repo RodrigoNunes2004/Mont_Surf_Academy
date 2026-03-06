@@ -15,6 +15,7 @@ export default function RegisterPage() {
         width={120}
         height={40}
         className="object-contain"
+        style={{ width: "auto", height: "auto" }}
       />
       <Card className="w-full max-w-md">
         <CardHeader>

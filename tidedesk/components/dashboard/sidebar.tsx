@@ -35,11 +35,12 @@ export function DashboardSidebar() {
       <div className="flex items-center justify-between gap-2 px-4 py-4">
         <Link href="/dashboard" className="flex items-center gap-2">
           <Image
-          src="/TD_logo.png"
-          alt="TideDesk"
+            src="/TD_logo.png"
+            alt="TideDesk"
             width={48}
             height={48}
             className="shrink-0"
+            style={{ width: "auto", height: "auto" }}
           />
           <span className="font-semibold tracking-tight">TideDesk</span>
         </Link>

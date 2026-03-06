@@ -45,3 +45,6 @@ next-env.d.ts
 
 # prisma generated (if custom output path used)
 /app/generated/prisma
+
+# user uploads
+/public/avatars

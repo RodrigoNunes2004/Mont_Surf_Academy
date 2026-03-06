@@ -2,7 +2,7 @@ import type { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { UserRole } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
-import { scrypt as _scrypt, timingSafeEqual } from "crypto";
+import { createHash, scrypt as _scrypt, timingSafeEqual } from "crypto";
 import { promisify } from "util";
 
 const scrypt = promisify(_scrypt);
@@ -65,17 +65,29 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     jwt({ token, user }) {
       if (user) {
-        const u = user as unknown as Partial<{ role: UserRole; businessId: string }>;
+        const u = user as unknown as Partial<{ role: UserRole; businessId: string; email?: string }>;
         if (u.role) token.role = u.role;
         if (u.businessId) token.businessId = u.businessId;
+        if (u.email) token.email = u.email;
       }
       return token;
     },
-    session({ session, token }) {
+    async session({ session, token }) {
       if (session.user) {
         session.user.id = token.sub ?? "";
         session.user.role = token.role as UserRole;
         session.user.businessId = token.businessId as string;
+        const user = (await prisma.user.findUnique({
+          where: { id: token.sub ?? "" },
+        })) as { avatarUrl?: string | null } | null;
+        const avatarUrl = user?.avatarUrl ?? null;
+        if (avatarUrl) {
+          session.user.image = avatarUrl;
+        } else if (token.email) {
+          const email = String(token.email).trim().toLowerCase();
+          const hash = createHash("md5").update(email).digest("hex");
+          session.user.image = `https://www.gravatar.com/avatar/${hash}?d=identicon&s=80`;
+        }
       }
       return session;
     },

@@ -1,21 +1,25 @@
 import { requireSession } from "@/lib/server/session";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { AccountSection } from "@/components/settings/account-section";
 import { BusinessProfileForm } from "@/components/settings/business-profile-form";
 import { BillingSection } from "@/components/settings/billing-section";
 import { IntegrationsSection } from "@/components/settings/integrations-section";
 import { InstructorsSection } from "@/components/settings/instructors-section";
 import { PaymentSettingsForm } from "@/components/settings/payment-settings-form";
 import { prisma } from "@/lib/prisma";
-import { Building2, CreditCard, DollarSign, Plug, Users } from "lucide-react";
+import { Building2, CreditCard, DollarSign, Plug, User, Users } from "lucide-react";
 
 export default async function SettingsPage() {
   const session = await requireSession();
   const businessId = session.user.businessId;
 
-  const business = await prisma.business.findUniqueOrThrow({
-    where: { id: businessId },
-  });
+  const [business, currentUser] = await Promise.all([
+    prisma.business.findUniqueOrThrow({ where: { id: businessId } }),
+    prisma.user.findUnique({ where: { id: session.user.id } }),
+  ]);
+
+  const avatarUrl = (currentUser as { avatarUrl?: string | null } | null)?.avatarUrl ?? null;
 
   return (
     <div className="space-y-6">
@@ -26,8 +30,12 @@ export default async function SettingsPage() {
         </p>
       </div>
 
-      <Tabs defaultValue="profile" className="space-y-4">
-        <TabsList className="grid w-full max-w-3xl grid-cols-2 sm:grid-cols-5">
+      <Tabs defaultValue="account" className="space-y-4">
+        <TabsList className="grid w-full max-w-3xl grid-cols-2 sm:grid-cols-6">
+          <TabsTrigger value="account" className="flex items-center gap-2">
+            <User className="size-4" />
+            Account
+          </TabsTrigger>
           <TabsTrigger value="profile" className="flex items-center gap-2">
             <Building2 className="size-4" />
             Business
@@ -49,6 +57,24 @@ export default async function SettingsPage() {
             Payment
           </TabsTrigger>
         </TabsList>
+
+        <TabsContent value="account" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Profile Photo</CardTitle>
+              <CardDescription>
+                Upload your photo to show in the dashboard. JPEG, PNG or WebP, max 2MB.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <AccountSection
+                avatarUrl={avatarUrl}
+                name={session.user.name ?? "User"}
+                email={session.user.email ?? ""}
+              />
+            </CardContent>
+          </Card>
+        </TabsContent>
 
         <TabsContent value="profile" className="space-y-4">
           <Card>
