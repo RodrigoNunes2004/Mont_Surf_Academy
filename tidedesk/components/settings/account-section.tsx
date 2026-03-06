@@ -104,7 +104,7 @@ export function AccountSection({ avatarUrl: initialAvatarUrl, name, email }: Acc
             >
               choose a file
             </button>{" "}
-            from your folder. JPEG, PNG or WebP. Max 2MB.
+            from your folder. JPEG, PNG or WebP. Max 4MB.
           </p>
           {loading && (
             <p className="mt-1 text-sm text-muted-foreground">Uploading…</p>

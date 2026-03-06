@@ -63,7 +63,7 @@ export default async function SettingsPage() {
             <CardHeader>
               <CardTitle>Profile Photo</CardTitle>
               <CardDescription>
-                Upload your photo to show in the dashboard. JPEG, PNG or WebP, max 2MB.
+                Upload your photo to show in the dashboard. JPEG, PNG or WebP, max 4MB.
               </CardDescription>
             </CardHeader>
             <CardContent>
