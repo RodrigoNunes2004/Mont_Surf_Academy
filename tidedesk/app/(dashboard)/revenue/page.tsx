@@ -6,6 +6,15 @@ import Link from "next/link";
 
 type SearchParams = { range?: string };
 
+function currencySymbol(currency: string | null | undefined): string {
+  const c = (currency ?? "NZD").toUpperCase();
+  if (c === "NZD") return "NZ$";
+  if (c === "USD") return "$";
+  if (c === "EUR") return "€";
+  if (c === "GBP") return "£";
+  return c + " ";
+}
+
 export default async function RevenuePage({
   searchParams,
 }: {
@@ -33,8 +42,12 @@ export default async function RevenuePage({
   startOfChart.setDate(now.getDate() - chartDays + 1);
   startOfChart.setHours(0, 0, 0, 0);
 
-  const [todayRevenue, weekRevenue, monthRevenue, byRental, byBooking, dailyPayments, todaysRentalsCount, todaysLessonsCount, rentalStats] =
+  const [business, todayRevenue, weekRevenue, monthRevenue, byRental, byBooking, dailyPayments, todaysRentalsCount, todaysLessonsCount, rentalStats] =
     await Promise.all([
+      prisma.business.findUnique({
+        where: { id: businessId },
+        select: { currency: true },
+      }),
       prisma.payment.aggregate({
         where: {
           businessId,
@@ -129,6 +142,7 @@ export default async function RevenuePage({
     .sort(([a], [b]) => a.localeCompare(b))
     .map(([date, amount]) => ({ date, amount }));
   const maxAmount = Math.max(1, ...chartData.map((d) => d.amount));
+  const symbol = currencySymbol(business?.currency);
 
   return (
     <div className="grid gap-4">
@@ -147,7 +161,7 @@ export default async function RevenuePage({
             </CardTitle>
           </CardHeader>
           <CardContent className="text-2xl font-semibold">
-            ${today}
+            {symbol}{today}
           </CardContent>
         </Card>
         <Card>
@@ -157,7 +171,7 @@ export default async function RevenuePage({
             </CardTitle>
           </CardHeader>
           <CardContent className="text-2xl font-semibold">
-            ${week}
+            {symbol}{week}
           </CardContent>
         </Card>
         <Card>
@@ -167,7 +181,7 @@ export default async function RevenuePage({
             </CardTitle>
           </CardHeader>
           <CardContent className="text-2xl font-semibold">
-            ${month}
+            {symbol}{month}
           </CardContent>
         </Card>
       </div>
@@ -200,7 +214,7 @@ export default async function RevenuePage({
             </CardTitle>
           </CardHeader>
           <CardContent className="text-2xl font-semibold">
-            ${avgRentalValue}
+            {symbol}{avgRentalValue}
           </CardContent>
         </Card>
       </div>
@@ -215,11 +229,11 @@ export default async function RevenuePage({
         <CardContent className="grid gap-4 md:grid-cols-2">
           <div className="rounded-lg border p-4">
             <div className="text-sm text-muted-foreground">Rental revenue</div>
-            <div className="text-2xl font-semibold">${rentalRev}</div>
+            <div className="text-2xl font-semibold">{symbol}{rentalRev}</div>
           </div>
           <div className="rounded-lg border p-4">
             <div className="text-sm text-muted-foreground">Lesson revenue</div>
-            <div className="text-2xl font-semibold">${lessonRev}</div>
+            <div className="text-2xl font-semibold">{symbol}{lessonRev}</div>
           </div>
         </CardContent>
       </Card>
@@ -259,7 +273,7 @@ export default async function RevenuePage({
               <div
                 key={date}
                 className="flex flex-1 flex-col items-center gap-1"
-                title={`${date}: $${amount.toFixed(2)}`}
+                title={`${date}: ${symbol}${amount.toFixed(2)}`}
               >
                 <div
                   className="w-full min-w-2 rounded-t bg-primary/80 transition-opacity hover:opacity-90"

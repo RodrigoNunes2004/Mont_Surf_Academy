@@ -74,6 +74,20 @@ export async function POST(req: NextRequest) {
       ? b.instructorId.trim()
       : null;
 
+  const durationRaw = b.durationMinutes;
+  const durationMinutes =
+    typeof durationRaw === "number" && Number.isFinite(durationRaw)
+      ? Math.trunc(durationRaw)
+      : typeof durationRaw === "string" && durationRaw.trim()
+        ? Math.trunc(Number(durationRaw))
+        : 60;
+  if (durationMinutes < 1 || durationMinutes > 480) {
+    return NextResponse.json(
+      { error: "durationMinutes must be between 1 and 480." },
+      { status: 400 },
+    );
+  }
+
   if (!title) {
     return NextResponse.json({ error: "title is required." }, { status: 400 });
   }
@@ -106,6 +120,7 @@ export async function POST(req: NextRequest) {
       title,
       price,
       capacity,
+      durationMinutes,
       instructorId,
     },
   });

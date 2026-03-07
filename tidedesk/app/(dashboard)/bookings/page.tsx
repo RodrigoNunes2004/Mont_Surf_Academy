@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { BookingStatus } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { requireSession } from "@/lib/server/session";
@@ -14,9 +15,13 @@ import {
 import { CreateLessonBookingDialog } from "@/components/bookings/create-lesson-booking-dialog";
 import { CancelBookingButton, CompleteBookingButton, NoShowBookingButton } from "@/components/bookings/booking-actions";
 import { CheckInBookingDialog } from "@/components/bookings/check-in-booking-dialog";
+import { PayBookingButton } from "@/components/bookings/pay-booking-button";
+import { LessonsTabContent } from "@/components/bookings/lessons-tab-content";
 
 type SearchParams = {
   status?: string;
+  payment?: string;
+  tab?: string;
 };
 
 function statusBadge(status: BookingStatus) {
@@ -50,7 +55,10 @@ export default async function BookingsPage({
           ? [BookingStatus.COMPLETED, BookingStatus.CANCELLED, BookingStatus.NO_SHOW]
           : [BookingStatus.BOOKED, BookingStatus.CHECKED_IN];
 
-  const [customers, lessons, instructors, categories, variants, bookings] = await Promise.all([
+  const [business, customers, lessons, instructors, categories, variants, bookings] = await Promise.all([
+    (prisma.business.findUnique({
+      where: { id: businessId },
+    }) as Promise<{ chargesEnabled: boolean; stripeAccountId: string | null } | null>),
     prisma.customer.findMany({
       where: { businessId, archivedAt: null } as never,
       orderBy: [{ lastName: "asc" }, { firstName: "asc" }],
@@ -88,33 +96,81 @@ export default async function BookingsPage({
       include: {
         customer: { select: { firstName: true, lastName: true } },
         instructor: { select: { firstName: true, lastName: true } },
-        lesson: { select: { title: true, durationMinutes: true } },
+        lesson: { select: { title: true, durationMinutes: true, price: true } },
         rental: { select: { id: true } },
+        payments: {
+          where: { provider: "STRIPE", status: "PAID" },
+          select: { id: true },
+        },
       },
     }),
   ]);
 
   const now = new Date();
 
+  const paymentSuccess = sp.payment === "success";
+  const activeTab = (sp.tab ?? "bookings").toLowerCase();
+  const showLessons = activeTab === "lessons";
+
+  const lessonsForClient = lessons.map((l) => ({
+    id: l.id,
+    title: l.title,
+    durationMinutes: l.durationMinutes,
+    capacity: l.capacity,
+    price: Number(l.price),
+  }));
+
   return (
     <div className="grid gap-4">
-      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-        <div>
-          <div className="text-xl font-semibold tracking-tight">Bookings</div>
-          <div className="text-sm text-muted-foreground">
-            Lesson bookings share the same engine as rentals (time windows + status).
-          </div>
-        </div>
-        <CreateLessonBookingDialog
-          customers={customers}
-          lessons={lessons}
-          instructors={instructors}
-          categories={categories}
-          variants={variants}
-        />
+      <div className="flex gap-1 border-b">
+        <Link
+          href="/bookings"
+          className={`px-4 py-2 text-sm font-medium transition-colors ${
+            !showLessons
+              ? "border-b-2 border-primary text-foreground"
+              : "text-muted-foreground hover:text-foreground"
+          }`}
+        >
+          Bookings
+        </Link>
+        <Link
+          href="/bookings?tab=lessons"
+          className={`px-4 py-2 text-sm font-medium transition-colors ${
+            showLessons
+              ? "border-b-2 border-primary text-foreground"
+              : "text-muted-foreground hover:text-foreground"
+          }`}
+        >
+          Lessons
+        </Link>
       </div>
 
-      <Card>
+      {showLessons ? (
+        <LessonsTabContent lessons={lessonsForClient} />
+      ) : (
+        <>
+          {paymentSuccess && (
+            <div className="rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-800 dark:border-green-800 dark:bg-green-950/30 dark:text-green-200">
+              Payment successful. The booking has been marked as paid.
+            </div>
+          )}
+          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+            <div>
+              <div className="text-xl font-semibold tracking-tight">Bookings</div>
+              <div className="text-sm text-muted-foreground">
+                Lesson bookings share the same engine as rentals (time windows + status).
+              </div>
+            </div>
+            <CreateLessonBookingDialog
+              customers={customers}
+              lessons={lessonsForClient}
+              instructors={instructors}
+              categories={categories}
+              variants={variants}
+            />
+          </div>
+
+          <Card>
         <CardHeader>
           <div className="flex items-center justify-between gap-4">
             <CardTitle className="text-base">Recent bookings</CardTitle>
@@ -152,6 +208,13 @@ export default async function BookingsPage({
                   const canCancel = b.status === BookingStatus.BOOKED && b.startAt > now;
                   const canCheckIn = b.status === BookingStatus.BOOKED && !b.rental;
                   const canComplete = b.status === BookingStatus.CHECKED_IN;
+                  const hasStripePayment = (b.payments?.length ?? 0) > 0;
+                  const canPay =
+                    business?.chargesEnabled &&
+                    business?.stripeAccountId &&
+                    b.lesson &&
+                    !hasStripePayment &&
+                    (b.status === BookingStatus.BOOKED || b.status === BookingStatus.CHECKED_IN);
                   return (
                     <TableRow key={b.id}>
                       <TableCell className="font-medium">
@@ -174,6 +237,12 @@ export default async function BookingsPage({
                       <TableCell>{statusBadge(b.status)}</TableCell>
                       <TableCell className="text-right">
                         <div className="flex justify-end gap-2">
+                          {canPay ? (
+                            <PayBookingButton
+                              bookingId={b.id}
+                              amount={`NZ$${(Number(b.lesson!.price) * b.participants).toFixed(2)}`}
+                            />
+                          ) : null}
                           {canCheckIn ? (
                             <CheckInBookingDialog bookingId={b.id} />
                           ) : null}
@@ -202,7 +271,9 @@ export default async function BookingsPage({
             </Table>
           </div>
         </CardContent>
-      </Card>
+          </Card>
+        </>
+      )}
     </div>
   );
 }

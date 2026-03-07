@@ -61,6 +61,13 @@ export async function POST(req: NextRequest) {
       : typeof b.trackSizes === "string"
         ? b.trackSizes.toLowerCase() === "true"
         : true;
+  const hourlyRateRaw = b.hourlyRate;
+  const hourlyRate =
+    typeof hourlyRateRaw === "number" && Number.isFinite(hourlyRateRaw) && hourlyRateRaw >= 0
+      ? new (await import("@prisma/client")).Prisma.Decimal(hourlyRateRaw)
+      : typeof hourlyRateRaw === "string" && hourlyRateRaw.trim()
+        ? new (await import("@prisma/client")).Prisma.Decimal(hourlyRateRaw)
+        : null;
 
   if (!name) {
     return NextResponse.json({ error: "name is required." }, { status: 400 });
@@ -81,6 +88,7 @@ export async function POST(req: NextRequest) {
       businessId,
       name,
       trackSizes,
+      ...(hourlyRate !== null ? { hourlyRate } : {}),
     },
   });
 

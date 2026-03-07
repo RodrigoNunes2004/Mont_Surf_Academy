@@ -68,6 +68,17 @@ export async function PATCH(req: NextRequest, { params }: Params) {
   }
   if (b.capacity === null) data.capacity = null;
 
+  if (typeof b.durationMinutes === "number" || typeof b.durationMinutes === "string") {
+    const n = Math.trunc(Number(b.durationMinutes));
+    if (!Number.isFinite(n) || n < 15 || n > 480) {
+      return NextResponse.json(
+        { error: "durationMinutes must be between 15 and 480." },
+        { status: 400 },
+      );
+    }
+    data.durationMinutes = n;
+  }
+
   if (typeof b.instructorId === "string") {
     const v = b.instructorId.trim();
     if (!v) {

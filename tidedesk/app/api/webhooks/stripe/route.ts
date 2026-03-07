@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 import Stripe from "stripe";
-import { PaymentStatus } from "@prisma/client";
+import type { Prisma } from "@prisma/client";
+import { RentalStatus } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 
 function getStripe() {
@@ -45,7 +46,7 @@ export async function POST(req: NextRequest) {
       case "account.updated": {
         const account = event.data.object as Stripe.Account;
         const business = await prisma.business.findFirst({
-          where: { stripeAccountId: account.id },
+          where: { stripeAccountId: account.id } as unknown as Prisma.BusinessWhereInput,
         });
         if (business) {
           await prisma.business.update({
@@ -54,7 +55,7 @@ export async function POST(req: NextRequest) {
               chargesEnabled: account.charges_enabled ?? false,
               payoutsEnabled: account.payouts_enabled ?? false,
               detailsSubmitted: account.details_submitted ?? false,
-            },
+            } as Parameters<typeof prisma.business.update>[0]["data"],
           });
         }
         break;
@@ -101,6 +102,12 @@ export async function POST(req: NextRequest) {
                 rentalId: rentalId || null,
               },
             });
+            if (rentalId) {
+              await prisma.rental.updateMany({
+                where: { id: rentalId, status: "PENDING" as RentalStatus },
+                data: { status: RentalStatus.ACTIVE },
+              });
+            }
           }
         }
         break;
@@ -175,6 +182,12 @@ export async function POST(req: NextRequest) {
                 rentalId: rentalId || null,
               },
             });
+            if (rentalId) {
+              await prisma.rental.updateMany({
+                where: { id: rentalId, status: "PENDING" as RentalStatus },
+                data: { status: RentalStatus.ACTIVE },
+              });
+            }
           }
         }
         break;

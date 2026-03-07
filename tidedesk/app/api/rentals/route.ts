@@ -24,6 +24,8 @@ export async function GET(req: NextRequest) {
 
   const customerId = searchParams.get("customerId")?.trim();
   const equipmentId = searchParams.get("equipmentId")?.trim();
+  const equipmentVariantId = searchParams.get("equipmentVariantId")?.trim();
+  const equipmentCategoryId = searchParams.get("equipmentCategoryId")?.trim();
   const status = searchParams.get("status")?.trim();
 
   if (status && !RENTAL_STATUSES.includes(status as RentalStatus)) {
@@ -38,6 +40,8 @@ export async function GET(req: NextRequest) {
       businessId,
       ...(customerId ? { customerId } : {}),
       ...(equipmentId ? { equipmentId } : {}),
+      ...(equipmentVariantId ? { equipmentVariantId } : {}),
+      ...(equipmentCategoryId ? { equipmentCategoryId } : {}),
       ...(status ? { status: status as RentalStatus } : {}),
     },
     orderBy: { startAt: "desc" },
@@ -168,7 +172,7 @@ export async function POST(req: NextRequest) {
     }
     if (!method) {
       return NextResponse.json(
-        { error: "method is required (CASH, CARD, TRANSFER, ONLINE)." },
+        { error: "method is required (CASH, EFTPOS, CARD, TRANSFER, ONLINE)." },
         { status: 400 },
       );
     }
@@ -211,6 +215,9 @@ export async function POST(req: NextRequest) {
           throw new Error("insufficient_availability");
         }
 
+        const isCardPayment = method === PaymentMethod.CARD;
+        const rentalStatus = isCardPayment ? ("PENDING" as RentalStatus) : RentalStatus.ACTIVE;
+
         const created = await tx.rental.create({
           data: {
             businessId,
@@ -220,18 +227,20 @@ export async function POST(req: NextRequest) {
             startAt,
             endAt,
             priceTotal,
-            status: RentalStatus.ACTIVE,
+            status: rentalStatus,
           },
         });
 
-        await tx.payment.create({
-          data: {
-            businessId,
-            rentalId: created.id,
-            amount: priceTotal,
-            method,
-          },
-        });
+        if (!isCardPayment) {
+          await tx.payment.create({
+            data: {
+              businessId,
+              rentalId: created.id,
+              amount: priceTotal,
+              method,
+            },
+          });
+        }
 
         return created;
       });

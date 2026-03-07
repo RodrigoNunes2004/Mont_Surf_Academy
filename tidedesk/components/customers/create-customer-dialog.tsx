@@ -24,6 +24,8 @@ export function CreateCustomerDialog() {
   const [lastName, setLastName] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
+  const [notes, setNotes] = useState("");
+  const [dob, setDob] = useState("");
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -38,6 +40,8 @@ export function CreateCustomerDialog() {
         lastName,
         phone: phone.trim() ? phone : null,
         email: email.trim() ? email : null,
+        notes: notes.trim() ? notes : null,
+        dob: dob.trim() ? dob : null,
       }),
     });
 
@@ -56,6 +60,8 @@ export function CreateCustomerDialog() {
     setLastName("");
     setPhone("");
     setEmail("");
+    setNotes("");
+    setDob("");
     router.refresh();
   }
 
@@ -106,6 +112,24 @@ export function CreateCustomerDialog() {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+            />
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor="dob">Date of birth (optional)</Label>
+            <Input
+              id="dob"
+              type="date"
+              value={dob}
+              onChange={(e) => setDob(e.target.value)}
+            />
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor="notes">Notes (optional)</Label>
+            <Input
+              id="notes"
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              placeholder="Internal notes..."
             />
           </div>
 

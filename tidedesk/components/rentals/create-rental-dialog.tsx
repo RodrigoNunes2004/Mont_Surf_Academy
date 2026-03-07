@@ -22,6 +22,7 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
+import { CustomerSelectWithCreate } from "@/components/ui/customer-select-with-create";
 import { cn } from "@/lib/utils";
 import { Check, ChevronsUpDown } from "lucide-react";
 
@@ -78,7 +79,6 @@ export function CreateRentalDialog({
   const [quantity, setQuantity] = useState("1");
   const [priceTotal, setPriceTotal] = useState("");
   const [method, setMethod] = useState<"CASH" | "EFTPOS" | "CARD" | "TRANSFER" | "ONLINE">("CASH");
-  const [customerOpen, setCustomerOpen] = useState(false);
   const [variantOpen, setVariantOpen] = useState(false);
   const [startAt, setStartAt] = useState(toDateTimeLocalValue(now));
   const [endAt, setEndAt] = useState(toDateTimeLocalValue(addMinutes(now, 60)));
@@ -114,14 +114,46 @@ export function CreateRentalDialog({
         endAt: new Date(endAt).toISOString(),
       }),
     });
-    setLoading(false);
 
     if (!res.ok) {
+      setLoading(false);
       const payload = (await res.json().catch(() => null)) as { error?: string } | null;
       setError(payload?.error ?? "Failed to create rental.");
       return;
     }
 
+    const { data: rental } = (await res.json()) as { data: { id: string; status: string } };
+
+    if (method === "CARD") {
+      const checkoutRes = await fetch("/api/payments/stripe/checkout/rental", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ rentalId: rental.id }),
+      });
+      setLoading(false);
+
+      if (!checkoutRes.ok) {
+        const payload = (await checkoutRes.json().catch(() => null)) as { error?: string } | null;
+        setError(payload?.error ?? "Failed to create payment link. Connect Stripe in Settings → Payment.");
+        return;
+      }
+
+      const { url } = (await checkoutRes.json()) as { url?: string };
+      if (url) {
+        setOpen(false);
+        setCustomerId("");
+        setCategoryId("");
+        setVariantId("");
+        setQuantity("1");
+        setPriceTotal("");
+        setMethod("CASH");
+        router.refresh();
+        window.location.href = url;
+        return;
+      }
+    }
+
+    setLoading(false);
     setOpen(false);
     setCustomerId("");
     setCategoryId("");
@@ -147,71 +179,21 @@ export function CreateRentalDialog({
         <DialogHeader>
           <DialogTitle>New rental</DialogTitle>
           <DialogDescription>
-            Create a rental with immediate payment. Equipment availability is
-            checked for the selected time window.
+            Create a rental. Cash, EFTPOS, Transfer, and Online record payment
+            immediately. Card redirects to Stripe to pay. Equipment availability
+            is checked for the selected time window.
           </DialogDescription>
         </DialogHeader>
 
         <form className="grid gap-4" onSubmit={onSubmit}>
           <div className="grid gap-2">
             <Label htmlFor="customer">Customer</Label>
-            <Popover open={customerOpen} onOpenChange={setCustomerOpen}>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  role="combobox"
-                  aria-expanded={customerOpen}
-                  className="h-10 w-full justify-between"
-                  id="customer"
-                >
-                  {selectedCustomer ? (
-                    <span className="truncate">
-                      {selectedCustomer.firstName} {selectedCustomer.lastName}
-                      {selectedCustomer.phone ? ` • ${selectedCustomer.phone}` : ""}
-                    </span>
-                  ) : (
-                    <span className="text-muted-foreground">
-                      Type to search customer…
-                    </span>
-                  )}
-                  <ChevronsUpDown className="ml-2 size-4 shrink-0 opacity-50" />
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
-                <Command>
-                  <CommandInput placeholder="Search customer..." />
-                  <CommandList>
-                    <CommandEmpty>No customer found.</CommandEmpty>
-                    <CommandGroup>
-                      {customers.map((c) => {
-                        const label = `${c.firstName} ${c.lastName}${
-                          c.phone ? ` • ${c.phone}` : ""
-                        }`;
-                        return (
-                          <CommandItem
-                            key={c.id}
-                            value={label}
-                            onSelect={() => {
-                              setCustomerId(c.id);
-                              setCustomerOpen(false);
-                            }}
-                            className="gap-2"
-                          >
-                            <Check
-                              className={cn(
-                                "size-4",
-                                customerId === c.id ? "opacity-100" : "opacity-0",
-                              )}
-                            />
-                            <span className="truncate">{label}</span>
-                          </CommandItem>
-                        );
-                      })}
-                    </CommandGroup>
-                  </CommandList>
-                </Command>
-              </PopoverContent>
-            </Popover>
+            <CustomerSelectWithCreate
+              customers={customers}
+              value={customerId}
+              onValueChange={setCustomerId}
+              placeholder="Type to search or add customer…"
+            />
           </div>
 
           <div className="grid gap-2">

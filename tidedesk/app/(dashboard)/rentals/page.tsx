@@ -2,6 +2,7 @@ import type { RentalStatus as PrismaRentalStatus } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { requireSession } from "@/lib/server/session";
 import { CreateRentalDialog } from "@/components/rentals/create-rental-dialog";
+import { PayRentalButton } from "@/components/rentals/pay-rental-button";
 import { CancelRentalButton, ReturnRentalButton } from "@/components/rentals/rental-actions";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -16,9 +17,11 @@ import {
 
 type SearchParams = {
   status?: string;
+  payment?: string;
 };
 
 const RENTAL_STATUS = {
+  PENDING: "PENDING",
   ACTIVE: "ACTIVE",
   RETURNED: "RETURNED",
   OVERDUE: "OVERDUE",
@@ -31,6 +34,7 @@ function statusBadge(status: RentalStatusLike) {
   if (status === RENTAL_STATUS.RETURNED) return <Badge variant="secondary">Returned</Badge>;
   if (status === RENTAL_STATUS.CANCELLED) return <Badge variant="secondary">Cancelled</Badge>;
   if (status === RENTAL_STATUS.OVERDUE) return <Badge variant="destructive">Overdue</Badge>;
+  if (status === RENTAL_STATUS.PENDING) return <Badge variant="outline">Pending payment</Badge>;
   return <Badge>Active</Badge>;
 }
 
@@ -44,6 +48,7 @@ type RentalRow = {
   startAt: Date;
   endAt: Date;
   status: PrismaRentalStatus;
+  priceTotal: number | null;
 };
 
 type CustomerMini = { id: string; firstName: string; lastName: string };
@@ -73,25 +78,23 @@ export default async function RentalsPage({
 
   const sp = await searchParams;
   const statusRaw = (sp.status ?? "active").toLowerCase();
-  const statusFilter: PrismaRentalStatus[] =
+  const statusFilter: string[] =
     statusRaw === "returned"
-      ? [RENTAL_STATUS.RETURNED as PrismaRentalStatus]
+      ? ["RETURNED"]
       : statusRaw === "cancelled"
-        ? [RENTAL_STATUS.CANCELLED as PrismaRentalStatus]
+        ? ["CANCELLED"]
         : statusRaw === "history"
-          ? [
-              RENTAL_STATUS.RETURNED as PrismaRentalStatus,
-              RENTAL_STATUS.CANCELLED as PrismaRentalStatus,
-            ]
-          : [
-              RENTAL_STATUS.ACTIVE as PrismaRentalStatus,
-              RENTAL_STATUS.OVERDUE as PrismaRentalStatus,
-            ];
+          ? ["RETURNED", "CANCELLED"]
+          : ["PENDING", "ACTIVE", "OVERDUE"];
 
   const customerWhere = { businessId } as Record<string, unknown>;
   customerWhere.archivedAt = null;
 
-  const [customers, equipment, categories, variants, rentals] = await Promise.all([
+  const [business, customers, _equipment, categories, variants, rentals] = await Promise.all([
+    prisma.business.findUnique({
+      where: { id: businessId },
+      select: { stripeAccountId: true, chargesEnabled: true } as Record<string, boolean>,
+    }) as Promise<{ stripeAccountId: string | null; chargesEnabled: boolean } | null>,
     prisma.customer.findMany({
       where: customerWhere as never,
       orderBy: [{ lastName: "asc" }, { firstName: "asc" }],
@@ -136,6 +139,7 @@ export default async function RentalsPage({
         startAt: true,
         endAt: true,
         status: true,
+        priceTotal: true,
       },
     }) as Promise<RentalRow[]>,
   ]);
@@ -194,9 +198,15 @@ export default async function RentalsPage({
   );
 
   const now = new Date();
+  const paymentSuccess = sp.payment === "success";
 
   return (
     <div className="grid gap-4">
+      {paymentSuccess && (
+        <div className="rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-800 dark:border-green-800 dark:bg-green-950/30 dark:text-green-200">
+          Payment successful. The rental is now active.
+        </div>
+      )}
       <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <div>
           <div className="text-xl font-semibold tracking-tight">Rentals</div>
@@ -244,11 +254,17 @@ export default async function RentalsPage({
               </TableHeader>
               <TableBody>
                 {rentals.map((r) => {
+                  const status = String(r.status);
                   const canCancel =
-                    r.status === RENTAL_STATUS.ACTIVE && r.startAt > now;
+                    (status === RENTAL_STATUS.ACTIVE || status === RENTAL_STATUS.PENDING) && r.startAt > now;
                   const canReturn =
-                    r.status === RENTAL_STATUS.ACTIVE ||
-                    r.status === RENTAL_STATUS.OVERDUE;
+                    status === RENTAL_STATUS.ACTIVE ||
+                    status === RENTAL_STATUS.OVERDUE;
+                  const canPay =
+                    status === RENTAL_STATUS.PENDING &&
+                    !!business?.chargesEnabled &&
+                    !!business?.stripeAccountId &&
+                    (r.priceTotal ?? 0) > 0;
 
                   const c = customerById.get(r.customerId);
                   const eq = r.equipmentId ? equipmentById.get(r.equipmentId) : null;
@@ -279,6 +295,12 @@ export default async function RentalsPage({
                       <TableCell>{statusBadge(r.status)}</TableCell>
                       <TableCell className="text-right">
                         <div className="flex justify-end gap-2">
+                          {canPay ? (
+                            <PayRentalButton
+                              rentalId={r.id}
+                              amount={`$${(r.priceTotal ?? 0).toFixed(2)}`}
+                            />
+                          ) : null}
                           {canReturn ? <ReturnRentalButton rentalId={r.id} /> : null}
                           <CancelRentalButton rentalId={r.id} disabled={!canCancel} />
                         </div>

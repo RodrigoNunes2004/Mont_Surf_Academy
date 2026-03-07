@@ -22,6 +22,7 @@ export function CreateCategoryDialog() {
 
   const [name, setName] = useState("");
   const [trackSizes, setTrackSizes] = useState(true);
+  const [hourlyRate, setHourlyRate] = useState("");
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -30,7 +31,11 @@ export function CreateCategoryDialog() {
     const res = await fetch("/api/equipment-categories", {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ name: name.trim(), trackSizes }),
+      body: JSON.stringify({
+        name: name.trim(),
+        trackSizes,
+        ...(hourlyRate.trim() ? { hourlyRate: Number(hourlyRate) || null } : {}),
+      }),
     });
     setLoading(false);
 
@@ -44,6 +49,7 @@ export function CreateCategoryDialog() {
 
     setOpen(false);
     setName("");
+    setHourlyRate("");
     setTrackSizes(true);
     router.refresh();
   }
@@ -70,6 +76,30 @@ export function CreateCategoryDialog() {
               onChange={(e) => setName(e.target.value)}
               placeholder="e.g. Softboard"
               required
+            />
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor="cat-hourly">Hourly rate (optional)</Label>
+            <Input
+              id="cat-hourly"
+              type="number"
+              min={0}
+              step={0.01}
+              value={hourlyRate}
+              onChange={(e) => setHourlyRate(e.target.value)}
+              placeholder="e.g. 15.00"
+            />
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor="cat-hourly">Hourly rate (optional)</Label>
+            <Input
+              id="cat-hourly"
+              type="number"
+              min={0}
+              step={0.01}
+              value={hourlyRate}
+              onChange={(e) => setHourlyRate(e.target.value)}
+              placeholder="e.g. 15.00"
             />
           </div>
           <div className="flex items-center gap-2">

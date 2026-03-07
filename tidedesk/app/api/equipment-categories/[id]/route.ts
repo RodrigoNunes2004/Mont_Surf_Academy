@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
+import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { resolveBusinessId } from "../../_lib/tenant";
 
@@ -84,6 +85,17 @@ export async function PATCH(req: NextRequest, { params }: Params) {
   }
 
   if (typeof b.trackSizes === "boolean") data.trackSizes = b.trackSizes;
+
+  const hourlyRateRaw = b.hourlyRate;
+  if (hourlyRateRaw !== undefined) {
+    if (hourlyRateRaw === null || hourlyRateRaw === "") {
+      data.hourlyRate = null;
+    } else if (typeof hourlyRateRaw === "number" && Number.isFinite(hourlyRateRaw) && hourlyRateRaw >= 0) {
+      data.hourlyRate = new Prisma.Decimal(hourlyRateRaw);
+    } else if (typeof hourlyRateRaw === "string" && hourlyRateRaw.trim()) {
+      data.hourlyRate = new Prisma.Decimal(hourlyRateRaw);
+    }
+  }
 
   const category = await db.equipmentCategory.update({
     where: { id },

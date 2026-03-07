@@ -275,6 +275,7 @@ model Rental {
 }
 
 enum RentalStatus {
+  PENDING   // Awaiting card payment via Stripe
   ACTIVE
   RETURNED
   OVERDUE

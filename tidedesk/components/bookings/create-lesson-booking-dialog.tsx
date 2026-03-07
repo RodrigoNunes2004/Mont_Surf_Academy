@@ -23,7 +23,9 @@ import {
   CommandList,
 } from "@/components/ui/command";
 import { cn } from "@/lib/utils";
-import { Check, ChevronsUpDown } from "lucide-react";
+import { Check, ChevronsUpDown, Search } from "lucide-react";
+import { CustomerSelectWithCreate } from "@/components/ui/customer-select-with-create";
+import { LessonSelectWithCreate } from "@/components/ui/lesson-select-with-create";
 
 type CustomerOption = {
   id: string;
@@ -65,7 +67,7 @@ export function CreateLessonBookingDialog({
   customers,
   lessons,
   instructors,
-  categories,
+  categories: _categories,
   variants,
 }: {
   customers: CustomerOption[];
@@ -89,22 +91,48 @@ export function CreateLessonBookingDialog({
   const [wetsuitVariantId, setWetsuitVariantId] = useState("");
   const [paymentMethod, setPaymentMethod] = useState<"CASH" | "EFTPOS" | "CARD" | "ONLINE">("CASH");
 
-  const [customerOpen, setCustomerOpen] = useState(false);
-  const [lessonOpen, setLessonOpen] = useState(false);
   const [instructorOpen, setInstructorOpen] = useState(false);
+  const [boardOpen, setBoardOpen] = useState(false);
+  const [wetsuitOpen, setWetsuitOpen] = useState(false);
+  const [boardSearch, setBoardSearch] = useState("");
+  const [wetsuitSearch, setWetsuitSearch] = useState("");
+  const [createdLessons, setCreatedLessons] = useState<LessonOption[]>([]);
 
-  const boardVariants = variants.filter(
-    (v) => v.category.name === "Softboard" || v.category.name === "Hardboard",
-  );
-  const wetsuitVariants = variants.filter((v) => v.category.name === "Wetsuit");
+  const boardVariants = variants.filter((v) => {
+    const n = v.category.name.toLowerCase().trim();
+    return !n.includes("wetsuit");
+  });
+  const wetsuitVariants = variants.filter((v) => {
+    const n = v.category.name.toLowerCase();
+    return n.includes("wetsuit");
+  });
 
-  const selectedCustomer = useMemo(
-    () => customers.find((c) => c.id === customerId) ?? null,
-    [customers, customerId],
+  const filteredBoardVariants = useMemo(() => {
+    if (!boardSearch.trim()) return boardVariants;
+    const q = boardSearch.toLowerCase();
+    return boardVariants.filter(
+      (v) =>
+        v.category.name.toLowerCase().includes(q) ||
+        v.label.toLowerCase().includes(q),
+    );
+  }, [boardVariants, boardSearch]);
+
+  const filteredWetsuitVariants = useMemo(() => {
+    if (!wetsuitSearch.trim()) return wetsuitVariants;
+    const q = wetsuitSearch.toLowerCase();
+    return wetsuitVariants.filter((v) => v.label.toLowerCase().includes(q));
+  }, [wetsuitVariants, wetsuitSearch]);
+
+  const selectedBoard = boardVariants.find((v) => v.id === boardVariantId);
+  const selectedWetsuit = wetsuitVariants.find((v) => v.id === wetsuitVariantId);
+
+  const allLessons = useMemo(
+    () => [...lessons, ...createdLessons.filter((l) => !lessons.some((x) => x.id === l.id))],
+    [lessons, createdLessons],
   );
   const selectedLesson = useMemo(
-    () => lessons.find((l) => l.id === lessonId) ?? null,
-    [lessons, lessonId],
+    () => allLessons.find((l) => l.id === lessonId) ?? null,
+    [allLessons, lessonId],
   );
   const selectedInstructor = useMemo(
     () => instructors.find((i) => i.id === instructorId) ?? null,
@@ -154,6 +182,7 @@ export function CreateLessonBookingDialog({
     setOpen(false);
     setCustomerId("");
     setLessonId("");
+    setCreatedLessons([]);
     setInstructorId("");
     setParticipants(1);
     setBoardVariantId("");
@@ -162,7 +191,7 @@ export function CreateLessonBookingDialog({
   }
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={setOpen} modal={false}>
       <DialogTrigger asChild>
         <Button>Add booking</Button>
       </DialogTrigger>
@@ -177,64 +206,12 @@ export function CreateLessonBookingDialog({
         <form className="grid gap-4" onSubmit={onSubmit}>
           <div className="grid gap-2">
             <Label htmlFor="customer">Customer</Label>
-            <Popover open={customerOpen} onOpenChange={setCustomerOpen}>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  role="combobox"
-                  aria-expanded={customerOpen}
-                  className="h-10 w-full justify-between"
-                  id="customer"
-                >
-                  {selectedCustomer ? (
-                    <span className="truncate">
-                      {selectedCustomer.firstName} {selectedCustomer.lastName}
-                      {selectedCustomer.phone ? ` • ${selectedCustomer.phone}` : ""}
-                      {selectedCustomer.email ? ` • ${selectedCustomer.email}` : ""}
-                    </span>
-                  ) : (
-                    <span className="text-muted-foreground">
-                      Type to search customer…
-                    </span>
-                  )}
-                  <ChevronsUpDown className="ml-2 size-4 shrink-0 opacity-50" />
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
-                <Command>
-                  <CommandInput placeholder="Search customer..." />
-                  <CommandList>
-                    <CommandEmpty>No customer found.</CommandEmpty>
-                    <CommandGroup>
-                      {customers.map((c) => {
-                        const label = `${c.firstName} ${c.lastName}${
-                          c.phone ? ` • ${c.phone}` : ""
-                        }${c.email ? ` • ${c.email}` : ""}`;
-                        return (
-                          <CommandItem
-                            key={c.id}
-                            value={label}
-                            onSelect={() => {
-                              setCustomerId(c.id);
-                              setCustomerOpen(false);
-                            }}
-                            className="gap-2"
-                          >
-                            <Check
-                              className={cn(
-                                "size-4",
-                                customerId === c.id ? "opacity-100" : "opacity-0",
-                              )}
-                            />
-                            <span className="truncate">{label}</span>
-                          </CommandItem>
-                        );
-                      })}
-                    </CommandGroup>
-                  </CommandList>
-                </Command>
-              </PopoverContent>
-            </Popover>
+            <CustomerSelectWithCreate
+              customers={customers}
+              value={customerId}
+              onValueChange={setCustomerId}
+              placeholder="Type to search or add customer…"
+            />
           </div>
 
           <div className="grid gap-2">
@@ -295,97 +272,130 @@ export function CreateLessonBookingDialog({
 
           <div className="grid gap-2">
             <Label htmlFor="lesson">Lesson</Label>
-            <Popover open={lessonOpen} onOpenChange={setLessonOpen}>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  role="combobox"
-                  aria-expanded={lessonOpen}
-                  className="h-10 w-full justify-between"
-                  id="lesson"
-                >
-                  {selectedLesson ? (
-                    <span className="truncate">
-                      {selectedLesson.title} • {selectedLesson.durationMinutes} min
-                      {selectedLesson.capacity ? ` • cap ${selectedLesson.capacity}` : ""}
-                    </span>
-                  ) : (
-                    <span className="text-muted-foreground">
-                      Type to search lesson…
-                    </span>
-                  )}
-                  <ChevronsUpDown className="ml-2 size-4 shrink-0 opacity-50" />
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
-                <Command>
-                  <CommandInput placeholder="Search lesson..." />
-                  <CommandList>
-                    <CommandEmpty>No lesson found.</CommandEmpty>
-                    <CommandGroup>
-                      {lessons.map((l) => {
-                        const label = `${l.title} • ${l.durationMinutes} min${
-                          l.capacity ? ` • cap ${l.capacity}` : ""
-                        }`;
-                        return (
-                          <CommandItem
-                            key={l.id}
-                            value={label}
-                            onSelect={() => {
-                              setLessonId(l.id);
-                              setLessonOpen(false);
-                            }}
-                            className="gap-2"
-                          >
-                            <Check
-                              className={cn(
-                                "size-4",
-                                lessonId === l.id ? "opacity-100" : "opacity-0",
-                              )}
-                            />
-                            <span className="truncate">{label}</span>
-                          </CommandItem>
-                        );
-                      })}
-                    </CommandGroup>
-                  </CommandList>
-                </Command>
-              </PopoverContent>
-            </Popover>
+            <LessonSelectWithCreate
+              lessons={lessons}
+              value={lessonId}
+              onValueChange={setLessonId}
+              onLessonCreated={(l) => setCreatedLessons((prev) => [...prev, l])}
+              placeholder="Type to search or add lesson…"
+            />
           </div>
 
           <div className="grid gap-2 md:grid-cols-2">
             <div className="grid gap-2">
               <Label htmlFor="boardVariant">Board size</Label>
-              <select
-                id="boardVariant"
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                value={boardVariantId}
-                onChange={(e) => setBoardVariantId(e.target.value)}
-              >
-                <option value="">Select board…</option>
-                {boardVariants.map((v) => (
-                  <option key={v.id} value={v.id}>
-                    {v.category.name} {v.label}
-                  </option>
-                ))}
-              </select>
+              <Popover open={boardOpen} onOpenChange={(o) => { setBoardOpen(o); if (!o) setBoardSearch(""); }}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    role="combobox"
+                    aria-expanded={boardOpen}
+                    className="h-10 w-full justify-between"
+                    id="boardVariant"
+                  >
+                    {selectedBoard ? (
+                      <span className="truncate">{selectedBoard.category.name} {selectedBoard.label}</span>
+                    ) : (
+                      <span className="text-muted-foreground">Select board…</span>
+                    )}
+                    <ChevronsUpDown className="ml-2 size-4 shrink-0 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="z-[100] w-[--radix-popover-trigger-width] p-0" align="start">
+                  <Command shouldFilter={false}>
+                    <div className="flex h-9 items-center gap-2 border-b px-3">
+                      <Search className="size-4 shrink-0 opacity-50" />
+                      <Input
+                        value={boardSearch}
+                        onChange={(e) => setBoardSearch(e.target.value)}
+                        placeholder="Search boards..."
+                        className="h-10 flex-1 border-0 bg-transparent px-0 shadow-none focus-visible:ring-0 focus-visible:ring-offset-0"
+                        autoFocus
+                      />
+                    </div>
+                    <CommandList>
+                      <CommandEmpty>
+                        No board found. In Equipment, add a category named e.g. &quot;Surfboard&quot; or &quot;Softboard&quot;, then add size variants (7ft, 9ft).
+                      </CommandEmpty>
+                      <CommandGroup>
+                        {filteredBoardVariants.map((v) => {
+                          const label = `${v.category.name} ${v.label}`;
+                          return (
+                            <CommandItem
+                              key={v.id}
+                              value={`${v.id}-${label}`}
+                              onSelect={() => {
+                                setBoardVariantId(v.id);
+                                setBoardOpen(false);
+                                setBoardSearch("");
+                              }}
+                              className="gap-2"
+                            >
+                              <Check className={cn("size-4", boardVariantId === v.id ? "opacity-100" : "opacity-0")} />
+                              <span className="truncate">{label}</span>
+                            </CommandItem>
+                          );
+                        })}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
             </div>
             <div className="grid gap-2">
               <Label htmlFor="wetsuitVariant">Wetsuit size</Label>
-              <select
-                id="wetsuitVariant"
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                value={wetsuitVariantId}
-                onChange={(e) => setWetsuitVariantId(e.target.value)}
-              >
-                <option value="">Select wetsuit…</option>
-                {wetsuitVariants.map((v) => (
-                  <option key={v.id} value={v.id}>
-                    {v.label}
-                  </option>
-                ))}
-              </select>
+              <Popover open={wetsuitOpen} onOpenChange={(o) => { setWetsuitOpen(o); if (!o) setWetsuitSearch(""); }}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    role="combobox"
+                    aria-expanded={wetsuitOpen}
+                    className="h-10 w-full justify-between"
+                    id="wetsuitVariant"
+                  >
+                    {selectedWetsuit ? (
+                      <span className="truncate">{selectedWetsuit.label}</span>
+                    ) : (
+                      <span className="text-muted-foreground">Select wetsuit…</span>
+                    )}
+                    <ChevronsUpDown className="ml-2 size-4 shrink-0 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="z-[100] w-[--radix-popover-trigger-width] p-0" align="start">
+                  <Command shouldFilter={false}>
+                    <div className="flex h-9 items-center gap-2 border-b px-3">
+                      <Search className="size-4 shrink-0 opacity-50" />
+                      <Input
+                        value={wetsuitSearch}
+                        onChange={(e) => setWetsuitSearch(e.target.value)}
+                        placeholder="Search wetsuits..."
+                        className="h-10 flex-1 border-0 bg-transparent px-0 shadow-none focus-visible:ring-0 focus-visible:ring-offset-0"
+                        autoFocus
+                      />
+                    </div>
+                    <CommandList>
+                      <CommandEmpty>No wetsuit found. Add equipment in Settings.</CommandEmpty>
+                      <CommandGroup>
+                        {filteredWetsuitVariants.map((v) => (
+                          <CommandItem
+                            key={v.id}
+                            value={`${v.id}-${v.label}`}
+                            onSelect={() => {
+                              setWetsuitVariantId(v.id);
+                              setWetsuitOpen(false);
+                              setWetsuitSearch("");
+                            }}
+                            className="gap-2"
+                          >
+                            <Check className={cn("size-4", wetsuitVariantId === v.id ? "opacity-100" : "opacity-0")} />
+                            <span className="truncate">{v.label}</span>
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
             </div>
           </div>
 
