@@ -84,6 +84,37 @@ export function BusinessProfileForm({ business }: { business: Business }) {
           {error}
         </div>
       )}
+      <div className="grid gap-2 sm:grid-cols-2">
+        <div className="grid gap-2">
+          <Label htmlFor="latitude">Latitude (weather alerts)</Label>
+          <Input
+            id="latitude"
+            type="number"
+            step="any"
+            min={-90}
+            max={90}
+            value={form.latitude}
+            onChange={(e) => setForm((f) => ({ ...f, latitude: e.target.value }))}
+            placeholder="-37.639"
+          />
+          <p className="text-xs text-muted-foreground">
+            Mount Maunganui ≈ -37.639
+          </p>
+        </div>
+        <div className="grid gap-2">
+          <Label htmlFor="longitude">Longitude (weather alerts)</Label>
+          <Input
+            id="longitude"
+            type="number"
+            step="any"
+            min={-180}
+            max={180}
+            value={form.longitude}
+            onChange={(e) => setForm((f) => ({ ...f, longitude: e.target.value }))}
+            placeholder="176.185"
+          />
+        </div>
+      </div>
       <div className="grid gap-2">
         <Label htmlFor="name">Business name *</Label>
         <Input
@@ -130,37 +161,6 @@ export function BusinessProfileForm({ business }: { business: Business }) {
           onChange={(e) => setForm((f) => ({ ...f, location: e.target.value }))}
           placeholder="Auckland"
         />
-      </div>
-      <div className="grid gap-2 sm:grid-cols-2">
-        <div className="grid gap-2">
-          <Label htmlFor="latitude">Latitude (weather)</Label>
-          <Input
-            id="latitude"
-            type="number"
-            step="any"
-            min={-90}
-            max={90}
-            value={form.latitude}
-            onChange={(e) => setForm((f) => ({ ...f, latitude: e.target.value }))}
-            placeholder="-37.639"
-          />
-          <p className="text-xs text-muted-foreground">
-            For weather alerts (e.g. Mount Maunganui ≈ -37.639)
-          </p>
-        </div>
-        <div className="grid gap-2">
-          <Label htmlFor="longitude">Longitude (weather)</Label>
-          <Input
-            id="longitude"
-            type="number"
-            step="any"
-            min={-180}
-            max={180}
-            value={form.longitude}
-            onChange={(e) => setForm((f) => ({ ...f, longitude: e.target.value }))}
-            placeholder="176.185"
-          />
-        </div>
       </div>
       <div className="grid gap-2">
         <Label htmlFor="timezone">Time zone</Label>
