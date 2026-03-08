@@ -36,18 +36,20 @@ export function DashboardTopbar({ onOpenNav }: { onOpenNav: () => void }) {
     .join("");
 
   return (
-    <header className="flex h-14 items-center justify-between border-b bg-background px-4">
-      <div className="flex items-center gap-2">
+    <header className="flex h-14 min-h-14 shrink-0 items-center justify-between border-b bg-background px-3 sm:px-4">
+      <div className="flex min-w-0 flex-1 items-center gap-2">
         <Button
           variant="ghost"
           size="icon"
-          className="md:hidden"
+          className="h-10 w-10 shrink-0 md:hidden"
           onClick={onOpenNav}
           aria-label="Open navigation"
         >
           <Menu className="size-5" />
         </Button>
-        <div className="text-sm font-medium">TideDesk Dashboard</div>
+        <div className="truncate text-sm font-medium">
+          <span className="hidden sm:inline">TideDesk </span>Dashboard
+        </div>
       </div>
 
       <DropdownMenu>

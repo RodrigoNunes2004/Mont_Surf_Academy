@@ -18,6 +18,13 @@ export const metadata: Metadata = {
   description: "Bookings, equipment tracking, instructors and revenue — all in one place.",
 };
 
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+  viewportFit: "cover",
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{

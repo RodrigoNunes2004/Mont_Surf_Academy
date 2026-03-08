@@ -122,10 +122,10 @@ export default async function BookingsPage({
 
   return (
     <div className="grid gap-4">
-      <div className="flex gap-1 border-b">
+      <div className="flex gap-1 overflow-x-auto border-b -mx-3 px-3 sm:mx-0 sm:px-0">
         <Link
           href="/bookings"
-          className={`px-4 py-2 text-sm font-medium transition-colors ${
+          className={`shrink-0 px-4 py-2.5 text-sm font-medium transition-colors min-h-11 flex items-center ${
             !showLessons
               ? "border-b-2 border-primary text-foreground"
               : "text-muted-foreground hover:text-foreground"
@@ -135,7 +135,7 @@ export default async function BookingsPage({
         </Link>
         <Link
           href="/bookings?tab=lessons"
-          className={`px-4 py-2 text-sm font-medium transition-colors ${
+          className={`shrink-0 px-4 py-2.5 text-sm font-medium transition-colors min-h-11 flex items-center ${
             showLessons
               ? "border-b-2 border-primary text-foreground"
               : "text-muted-foreground hover:text-foreground"

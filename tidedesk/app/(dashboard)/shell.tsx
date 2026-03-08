@@ -3,6 +3,7 @@
 import type { ReactNode } from "react";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { DashboardTopbar } from "@/components/dashboard/topbar";
+import { DashboardProvider } from "@/lib/dashboard-context";
 import { useState } from "react";
 
 export function DashboardShell({
@@ -15,20 +16,25 @@ export function DashboardShell({
   const [open, setOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="hidden md:fixed md:inset-y-0 md:flex">{sidebar}</div>
+    <DashboardProvider closeSidebar={() => setOpen(false)}>
+      <div className="min-h-screen bg-background">
+        <div className="hidden md:fixed md:inset-y-0 md:flex">{sidebar}</div>
 
-      <div className="md:pl-64">
-        <DashboardTopbar onOpenNav={() => setOpen(true)} />
-        <main className="p-4">{children}</main>
+        <div className="md:pl-64">
+          <DashboardTopbar onOpenNav={() => setOpen(true)} />
+          <main className="p-3 sm:p-4 md:p-6">{children}</main>
+        </div>
+
+        <Sheet open={open} onOpenChange={setOpen}>
+          <SheetContent
+            side="left"
+            className="w-[85vw] max-w-[280px] p-0 sm:max-w-[300px]"
+          >
+            {sidebar}
+          </SheetContent>
+        </Sheet>
       </div>
-
-      <Sheet open={open} onOpenChange={setOpen}>
-        <SheetContent side="left" className="p-0">
-          {sidebar}
-        </SheetContent>
-      </Sheet>
-    </div>
+    </DashboardProvider>
   );
 }
 

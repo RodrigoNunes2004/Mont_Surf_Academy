@@ -240,14 +240,14 @@ export default async function RevenuePage({
 
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between gap-2">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <CardTitle className="text-base">Revenue by date</CardTitle>
               <p className="text-sm text-muted-foreground">
                 Last {chartDays} days
               </p>
             </div>
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
               <Link
                 href="/revenue?range=14"
                 className={`rounded px-3 py-1.5 text-sm font-medium transition-colors ${
@@ -268,7 +268,8 @@ export default async function RevenuePage({
           </div>
         </CardHeader>
         <CardContent>
-          <div className="flex items-end gap-1 h-32">
+          <div className="min-w-0 overflow-x-auto">
+            <div className="flex min-w-max items-end gap-0.5 sm:gap-1 h-32 px-1">
             {chartData.map(({ date, amount }) => (
               <div
                 key={date}
@@ -290,6 +291,7 @@ export default async function RevenuePage({
                 </span>
               </div>
             ))}
+            </div>
           </div>
         </CardContent>
       </Card>

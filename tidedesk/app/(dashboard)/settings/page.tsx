@@ -44,7 +44,7 @@ export default async function SettingsPage({ searchParams }: { searchParams: Sea
       </div>
 
       <Tabs defaultValue={defaultTab} className="space-y-4">
-        <TabsList className="grid w-full max-w-3xl grid-cols-2 sm:grid-cols-6">
+        <TabsList className="flex w-full max-w-3xl flex-wrap gap-1 sm:grid sm:grid-cols-3 lg:grid-cols-6">
           <TabsTrigger value="account" className="flex items-center gap-2">
             <User className="size-4" />
             Account
