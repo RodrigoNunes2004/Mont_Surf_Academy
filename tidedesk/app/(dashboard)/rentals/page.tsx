@@ -201,13 +201,13 @@ export default async function RentalsPage({
   const paymentSuccess = sp.payment === "success";
 
   return (
-    <div className="grid gap-4">
+    <div className="min-w-0 grid gap-4">
       {paymentSuccess && (
         <div className="rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-800 dark:border-green-800 dark:bg-green-950/30 dark:text-green-200">
           Payment successful. The rental is now active.
         </div>
       )}
-      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+      <div className="flex min-w-0 flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <div>
           <div className="text-xl font-semibold tracking-tight">Rentals</div>
           <div className="text-sm text-muted-foreground">
@@ -240,7 +240,7 @@ export default async function RentalsPage({
           </div>
         </CardHeader>
         <CardContent>
-          <div className="overflow-x-auto">
+          <div className="min-w-0 overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -294,7 +294,7 @@ export default async function RentalsPage({
                       <TableCell>{new Date(r.endAt).toLocaleString()}</TableCell>
                       <TableCell>{statusBadge(r.status)}</TableCell>
                       <TableCell className="text-right">
-                        <div className="flex justify-end gap-2">
+                        <div className="flex flex-wrap justify-end gap-1 sm:gap-2">
                           {canPay ? (
                             <PayRentalButton
                               rentalId={r.id}

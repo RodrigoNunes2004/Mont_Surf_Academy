@@ -95,8 +95,7 @@ function OnboardingForm() {
           alt="TideDesk"
           width={120}
           height={40}
-          className="object-contain"
-          style={{ width: "auto", height: "auto" }}
+          className="h-10 w-auto object-contain"
         />
         <Card className="w-full max-w-md">
           <CardHeader>
@@ -125,8 +124,7 @@ function OnboardingForm() {
         alt="TideDesk"
         width={120}
         height={40}
-        className="object-contain"
-        style={{ width: "auto", height: "auto" }}
+        className="h-10 w-auto object-contain"
       />
       <Card className="w-full max-w-md">
         <CardHeader>

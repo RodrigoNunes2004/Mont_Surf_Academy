@@ -90,8 +90,8 @@ export default async function EquipmentPage({
   ]);
 
   return (
-    <div className="grid gap-4">
-      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+    <div className="min-w-0 grid gap-4">
+      <div className="flex min-w-0 flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <div>
           <div className="text-xl font-semibold tracking-tight">Equipment</div>
           <div className="text-sm text-muted-foreground">

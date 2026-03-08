@@ -109,26 +109,28 @@ export default async function CustomersPage({
   }
 
   return (
-    <div className="grid gap-4">
-      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between md:gap-4">
+    <div className="min-w-0 grid gap-4">
+      <div className="flex min-w-0 flex-col gap-3 md:flex-row md:items-center md:justify-between md:gap-4">
         <div>
           <div className="text-xl font-semibold tracking-tight">Customers</div>
           <div className="text-sm text-muted-foreground">
             Create and manage surf school customers.
           </div>
         </div>
-        <CreateCustomerDialog />
+        <div className="shrink-0">
+          <CreateCustomerDialog />
+        </div>
       </div>
 
       <Card>
         <CardHeader>
-          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-            <CardTitle className="text-base">Customer list</CardTitle>
+          <div className="flex min-w-0 flex-col gap-3 md:flex-row md:items-center md:justify-between">
+            <CardTitle className="text-base shrink-0">Customer list</CardTitle>
 
             <form
               action="/customers"
               method="GET"
-              className="flex flex-col gap-2 md:flex-row md:items-end"
+              className="flex min-w-0 flex-col gap-2 md:flex-row md:items-end"
             >
               <input type="hidden" name="page" value="1" />
               <div className="grid gap-1">
@@ -180,7 +182,7 @@ export default async function CustomersPage({
           </div>
         </CardHeader>
         <CardContent>
-          <div className="overflow-x-auto">
+          <div className="min-w-0 overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -210,7 +212,7 @@ export default async function CustomersPage({
                       {new Date(c.createdAt).toLocaleDateString()}
                     </TableCell>
                     <TableCell className="text-right">
-                      <div className="flex justify-end gap-1">
+                      <div className="flex flex-wrap justify-end gap-1">
                         <EditCustomerDialog
                           customer={{
                             id: c.id,

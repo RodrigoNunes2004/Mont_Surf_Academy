@@ -17,12 +17,12 @@ export function DashboardShell({
 
   return (
     <DashboardProvider closeSidebar={() => setOpen(false)}>
-      <div className="min-h-screen bg-background">
+      <div className="flex min-h-screen min-w-0 bg-background">
         <div className="hidden md:fixed md:inset-y-0 md:flex">{sidebar}</div>
 
-        <div className="md:pl-64">
+        <div className="min-w-0 flex-1 md:pl-64">
           <DashboardTopbar onOpenNav={() => setOpen(true)} />
-          <main className="p-3 sm:p-4 md:p-6">{children}</main>
+          <main className="min-w-0 overflow-x-hidden p-3 sm:p-4 md:p-6">{children}</main>
         </div>
 
         <Sheet open={open} onOpenChange={setOpen}>

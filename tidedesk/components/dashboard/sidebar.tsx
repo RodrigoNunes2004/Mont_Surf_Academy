@@ -41,8 +41,7 @@ export function DashboardSidebar() {
             alt="TideDesk"
             width={48}
             height={48}
-            className="shrink-0"
-            style={{ width: "auto", height: "auto" }}
+            className="h-12 w-auto shrink-0"
           />
           <span className="font-semibold tracking-tight">TideDesk</span>
         </Link>

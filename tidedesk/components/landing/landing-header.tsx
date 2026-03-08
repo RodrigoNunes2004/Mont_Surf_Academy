@@ -36,8 +36,7 @@ export function LandingHeader() {
             alt="TideDesk"
             width={40}
             height={40}
-            className="shrink-0"
-            style={{ width: "auto", height: "auto" }}
+            className="h-10 w-auto shrink-0"
           />
           <span className="font-semibold text-lg">TideDesk</span>
         </Link>

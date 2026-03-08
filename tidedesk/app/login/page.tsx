@@ -50,8 +50,7 @@ export default function LoginPage() {
           alt="TideDesk"
           width={384}
           height={96}
-          className="w-full object-contain"
-          style={{ width: "auto", height: "auto" }}
+          className="h-auto w-full object-contain"
         />
       </div>
       <Card className="w-full max-w-sm">

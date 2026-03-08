@@ -121,8 +121,8 @@ export default async function BookingsPage({
   }));
 
   return (
-    <div className="grid gap-4">
-      <div className="flex gap-1 overflow-x-auto border-b -mx-3 px-3 sm:mx-0 sm:px-0">
+    <div className="min-w-0 grid gap-4">
+      <div className="flex min-w-0 gap-1 overflow-x-auto border-b -mx-3 px-3 sm:mx-0 sm:px-0">
         <Link
           href="/bookings"
           className={`shrink-0 px-4 py-2.5 text-sm font-medium transition-colors min-h-11 flex items-center ${
@@ -154,7 +154,7 @@ export default async function BookingsPage({
               Payment successful. The booking has been marked as paid.
             </div>
           )}
-          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+          <div className="flex min-w-0 flex-col gap-3 md:flex-row md:items-center md:justify-between">
             <div>
               <div className="text-xl font-semibold tracking-tight">Bookings</div>
               <div className="text-sm text-muted-foreground">
@@ -189,7 +189,7 @@ export default async function BookingsPage({
           </div>
         </CardHeader>
         <CardContent>
-          <div className="overflow-x-auto">
+          <div className="min-w-0 overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -236,7 +236,7 @@ export default async function BookingsPage({
                       <TableCell>{b.participants}</TableCell>
                       <TableCell>{statusBadge(b.status)}</TableCell>
                       <TableCell className="text-right">
-                        <div className="flex justify-end gap-2">
+                        <div className="flex flex-wrap justify-end gap-1 sm:gap-2">
                           {canPay ? (
                             <PayBookingButton
                               bookingId={b.id}
