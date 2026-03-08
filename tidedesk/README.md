@@ -15,6 +15,7 @@ Management software for surf schools and equipment rental businesses.
 - **Instructor management** — Add instructors with certification, assign to lessons and bookings.
 - **Revenue tracking** — Today / week / month summaries, rental vs lesson breakdown, daily revenue chart (14 or 30 days), activity counts and averages.
 - **Stripe subscription billing** — 30-day free trial, 69 NZD/month Starter plan.
+- **Public online booking page** — `/book/[school-slug]` — Lesson selection, time slots, customer form, pay now (Stripe) or pay later; embeddable iframe (`?embed=1`).
 - **Multi-tenant architecture** — Data scoped by business; users belong to a business and operate within that scope.
 - **Authentication and roles** — Credential-based sign-in (NextAuth), JWT sessions, roles (Owner, Staff, Instructor) with business-scoped access.
 
@@ -36,6 +37,7 @@ Built with Next.js 16, React 19, Tailwind, shadcn/ui, Prisma, PostgreSQL (Neon),
 
 - **Marketing** — `/` (home), `/pricing`, `/features`
 - **Auth** — `/login`, `/register`
+- **Public booking** — `/book/[school-slug]` — Customers book lessons online (no login required)
 - **Dashboard** — Dashboard, Customers, Rentals, Bookings, Equipment, Instructors, Revenue, Settings
 
 ### Data Flow

@@ -149,6 +149,47 @@ async function main() {
     });
   }
 
+  const instructor = await db.instructor.upsert({
+    where: { id: "seed_instructor_1" },
+    update: {},
+    create: {
+      id: "seed_instructor_1",
+      businessId,
+      firstName: "Jake",
+      lastName: "Wilson",
+      email: "jake@tidedesk.demo",
+      isActive: true,
+    },
+  });
+
+  await db.lesson.upsert({
+    where: { id: "seed_lesson_beginner" },
+    update: {},
+    create: {
+      id: "seed_lesson_beginner",
+      businessId,
+      instructorId: instructor.id,
+      title: "Beginner Surf Lesson",
+      price: 89,
+      durationMinutes: 90,
+      capacity: 6,
+    },
+  });
+
+  await db.lesson.upsert({
+    where: { id: "seed_lesson_private" },
+    update: {},
+    create: {
+      id: "seed_lesson_private",
+      businessId,
+      instructorId: instructor.id,
+      title: "Private 1:1 Lesson",
+      price: 150,
+      durationMinutes: 60,
+      capacity: 1,
+    },
+  });
+
   console.log("Seed complete:", {
     business: { id: business.id, name: business.name },
     owner: { id: owner.id, email: owner.email, role: owner.role },

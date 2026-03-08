@@ -8,6 +8,7 @@ import { IntegrationsSection } from "@/components/settings/integrations-section"
 import { InstructorsSection } from "@/components/settings/instructors-section";
 import { PaymentSettingsForm } from "@/components/settings/payment-settings-form";
 import { StripeConnectSection } from "@/components/settings/stripe-connect-section";
+import { OnlineBookingSection } from "@/components/settings/online-booking-section";
 import { prisma } from "@/lib/prisma";
 import { Building2, CreditCard, DollarSign, Plug, User, Users } from "lucide-react";
 
@@ -90,6 +91,7 @@ export default async function SettingsPage({ searchParams }: { searchParams: Sea
         </TabsContent>
 
         <TabsContent value="profile" className="space-y-4">
+          <OnlineBookingSection slug={business.slug} />
           <Card>
             <CardHeader>
               <CardTitle>Business Profile</CardTitle>
