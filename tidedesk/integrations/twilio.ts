@@ -12,24 +12,29 @@ async function getTwilioClient() {
   return new Twilio(accountSid, authToken);
 }
 
-export async function sendSms(to: string, body: string): Promise<boolean> {
+export type SmsResult = { ok: true } | { ok: false; error: string };
+
+export async function sendSms(to: string, body: string): Promise<SmsResult> {
   const from = process.env.TWILIO_PHONE_NUMBER;
   if (!from) {
-    console.warn("Twilio: TWILIO_PHONE_NUMBER not set");
-    return false;
+    const msg = "TWILIO_PHONE_NUMBER not set";
+    console.warn("Twilio:", msg);
+    return { ok: false, error: msg };
   }
 
   const client = await getTwilioClient();
   if (!client) {
-    console.warn("Twilio: credentials not configured");
-    return false;
+    const msg = "Credentials not configured (TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)";
+    console.warn("Twilio:", msg);
+    return { ok: false, error: msg };
   }
 
   try {
     await client.messages.create({ to, from, body });
-    return true;
+    return { ok: true };
   } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
     console.error("Twilio SMS error:", err);
-    return false;
+    return { ok: false, error: message };
   }
 }

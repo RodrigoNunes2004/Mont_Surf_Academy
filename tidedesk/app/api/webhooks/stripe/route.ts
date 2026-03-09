@@ -200,6 +200,11 @@ export async function POST(req: NextRequest) {
               console.error("Payment receipt email failed:", e);
             }
           }
+          if (bookingId) {
+            notificationService.sendBookingConfirmation(bookingId).catch((e) => {
+              console.error("Booking confirmation email failed:", e);
+            });
+          }
         }
         break;
       }

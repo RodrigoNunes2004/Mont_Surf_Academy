@@ -6,6 +6,7 @@ const ACTIVE_BOOKING_STATUSES = ["BOOKED", "CHECKED_IN"] as ("BOOKED" | "CHECKED
 // Surf-friendly hours: 7am–5pm in the business's local timezone (daylight considered)
 const SLOT_START_HOUR = 7;
 const SLOT_END_HOUR = 17; // last slot ends at 5pm
+const SLOT_INTERVAL_MINUTES = 15; // Allow times like 7:15, 7:30, 3:45
 
 /**
  * GET /api/public/schools/[slug]/slots?lessonId=&date=
@@ -111,7 +112,7 @@ export async function GET(
   for (
     let slotStart = new Date(dayStart);
     slotStart < dayEnd;
-    slotStart.setMinutes(slotStart.getMinutes() + durationMinutes)
+    slotStart.setMinutes(slotStart.getMinutes() + SLOT_INTERVAL_MINUTES)
   ) {
     const slotEnd = new Date(slotStart.getTime() + durationMinutes * 60_000);
     if (slotEnd > dayEnd) break;

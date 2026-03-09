@@ -144,9 +144,9 @@ export async function POST(
   const lessonPrice = (lesson as { price: Prisma.Decimal }).price;
   const amount = new Prisma.Decimal(participants).mul(lessonPrice);
   const payLater = b.payLater === true;
-  const method = payLater
-    ? (business.defaultPaymentMethod ?? "CASH")
-    : "ONLINE";
+  const method: PaymentMethod = payLater
+    ? (business.defaultPaymentMethod ?? PaymentMethod.CASH)
+    : PaymentMethod.ONLINE;
 
   try {
     type TxResult = { booking: { id: string; startAt: Date; endAt: Date; participants: number }; customer: { id: string; firstName: string; lastName: string; phone: string | null } };
@@ -288,10 +288,11 @@ export async function POST(
       };
     });
 
-    const phone = (result.customer as { phone?: string | null }).phone?.trim();
-    const customerEmail = (result.customer as { email?: string | null }).email?.trim();
+    const customerRecord = result.customer as { phone?: string | null; email?: string | null };
+    const customerPhone = customerRecord.phone?.trim();
+    const customerEmail = customerRecord.email?.trim();
 
-    if (phone) {
+    if (customerPhone) {
       try {
         const start = new Date(result.booking.startAt);
         const timeStr = start.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
@@ -301,7 +302,7 @@ export async function POST(
           businessId: business.id,
           type: "BOOKING_CONFIRMATION",
           channel: "SMS",
-          recipient: phone,
+          recipient: customerPhone,
           content,
           metadata: { bookingId: result.booking.id },
         });
@@ -311,11 +312,12 @@ export async function POST(
     }
 
     if (customerEmail) {
-      try {
-        await notificationService.sendBookingConfirmation(result.booking.id);
-      } catch (e) {
-        console.error("Booking confirmation email failed:", e);
+      if (payLater) {
+        notificationService.sendBookingConfirmation(result.booking.id).catch((e) => {
+          console.error("Booking confirmation email failed:", e);
+        });
       }
+      // For pay-now: confirmation email is sent from Stripe webhook after payment
     }
 
     return Response.json(
@@ -340,6 +342,7 @@ export async function POST(
     );
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
+    console.error("Public booking error:", err);
     if (msg === "SLOT_TAKEN" || msg === "SLOT_FULL") {
       return Response.json(
         { error: "This time slot was just taken. Please choose another." },
@@ -358,10 +361,10 @@ export async function POST(
         { status: 400 }
       );
     }
-    console.error("Public booking error:", err);
-    return Response.json(
-      { error: "Failed to create booking" },
-      { status: 500 }
-    );
+    const errorMessage =
+      process.env.NODE_ENV === "development"
+        ? `Failed to create booking: ${msg}`
+        : "Failed to create booking";
+    return Response.json({ error: errorMessage }, { status: 500 });
   }
 }

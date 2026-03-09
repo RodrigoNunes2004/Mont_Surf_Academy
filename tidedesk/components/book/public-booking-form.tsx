@@ -48,6 +48,99 @@ type Slot = {
   instructorId: string | null;
 };
 
+function TimeScrollPickers({
+  slots,
+  selectedSlot,
+  onSelectSlot,
+  timezone,
+}: {
+  slots: Slot[];
+  selectedSlot: Slot | null;
+  onSelectSlot: (slot: Slot) => void;
+  timezone: string;
+}) {
+  const slotByTime = new Map<string, Slot>();
+  const hourSet = new Set<number>();
+  const minuteSet = new Set<number>();
+  for (const s of slots) {
+    const d = new Date(s.start);
+    const h = parseInt(d.toLocaleString("en-CA", { hour: "numeric", hour12: false, timeZone: timezone }), 10);
+    const m = parseInt(d.toLocaleString("en-CA", { minute: "2-digit", timeZone: timezone }), 10);
+    const key = `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
+    slotByTime.set(key, s);
+    hourSet.add(h);
+    minuteSet.add(m);
+  }
+  const hours = Array.from(hourSet).sort((a, b) => a - b);
+  const minutes = Array.from(minuteSet).sort((a, b) => a - b);
+
+  const selectedHour = selectedSlot
+    ? parseInt(new Date(selectedSlot.start).toLocaleString("en-CA", { hour: "numeric", hour12: false, timeZone: timezone }), 10)
+    : null;
+  const selectedMinute = selectedSlot
+    ? parseInt(new Date(selectedSlot.start).toLocaleString("en-CA", { minute: "2-digit", timeZone: timezone }), 10)
+    : null;
+
+  function handlePick(h: number, m: number) {
+    const key = `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
+    const s = slotByTime.get(key);
+    if (s) onSelectSlot(s);
+  }
+
+  return (
+    <div className="flex flex-col gap-2">
+      <div className="flex items-stretch gap-2 rounded-md border border-input p-2">
+        <div className="flex flex-1 flex-col">
+          <span className="mb-1 text-center text-xs font-medium text-muted-foreground">Hour</span>
+          <div
+            className="max-h-32 overflow-y-auto rounded bg-muted/50"
+            style={{ scrollbarWidth: "thin", msOverflowStyle: "scrollbar" }}
+          >
+            {hours.map((h) => (
+              <button
+                key={h}
+                type="button"
+                onClick={() => handlePick(h, selectedMinute ?? minutes[0] ?? 0)}
+                className={`block w-full px-3 py-2 text-center text-sm transition-colors hover:bg-muted ${
+                  selectedHour === h ? "bg-primary text-primary-foreground" : ""
+                }`}
+              >
+                {String(h).padStart(2, "0")}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div className="flex flex-1 flex-col">
+          <span className="mb-1 text-center text-xs font-medium text-muted-foreground">Min</span>
+          <div
+            className="max-h-32 overflow-y-auto rounded bg-muted/50"
+            style={{ scrollbarWidth: "thin", msOverflowStyle: "scrollbar" }}
+          >
+            {minutes.map((m) => (
+              <button
+                key={m}
+                type="button"
+                onClick={() => handlePick(selectedHour ?? hours[0] ?? 7, m)}
+                className={`block w-full px-3 py-2 text-center text-sm transition-colors hover:bg-muted ${
+                  selectedMinute === m ? "bg-primary text-primary-foreground" : ""
+                }`}
+              >
+                {String(m).padStart(2, "0")}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+      <p className="text-xs text-muted-foreground">
+        Times in {timezone}
+        {selectedSlot && (
+          <> • {new Date(selectedSlot.start).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", timeZone: timezone })}</>
+        )}
+      </p>
+    </div>
+  );
+}
+
 export function PublicBookingForm({ businessSlug }: { businessSlug: string }) {
   const router = useRouter();
   const [step, setStep] = useState(1);
@@ -318,41 +411,12 @@ export function PublicBookingForm({ businessSlug }: { businessSlug: string }) {
                 No slots available for this date. Try another date.
               </p>
             ) : (
-              <div className="flex flex-col gap-2">
-                <div
-                  className="grid max-h-44 grid-cols-4 gap-2 overflow-y-scroll rounded-md border border-input p-2 sm:grid-cols-5"
-                  style={{
-                    scrollbarWidth: "thin",
-                    msOverflowStyle: "scrollbar",
-                  }}
-                >
-                  {displaySlots.map((s) => {
-                    const start = new Date(s.start);
-                    const tz = data?.business?.timezone ?? "Pacific/Auckland";
-                    const label = start.toLocaleTimeString([], {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                      timeZone: tz,
-                    });
-                    return (
-                      <Button
-                        key={s.start}
-                        type="button"
-                        variant={displaySlot?.start === s.start ? "default" : "outline"}
-                        size="sm"
-                        className="text-sm"
-                        onClick={() => setSlot(s)}
-                      >
-                        {label}
-                      </Button>
-                    );
-                  })}
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  Times in {data?.business?.timezone ?? "Pacific/Auckland"}
-                  {displaySlots.length > 8 && " • Scroll down for more"}
-                </p>
-              </div>
+              <TimeScrollPickers
+                slots={displaySlots}
+                selectedSlot={displaySlot}
+                onSelectSlot={setSlot}
+                timezone={data?.business?.timezone ?? "Pacific/Auckland"}
+              />
             )}
           </div>
         </CardContent>

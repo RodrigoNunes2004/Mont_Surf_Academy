@@ -25,7 +25,11 @@ export async function sendNotification(input: CreateNotificationInput) {
   const { businessId, type, channel, recipient, content, metadata } = input;
 
   if (channel === "SMS") {
-    const sent = await sendSms(recipient, content);
+    const result = await sendSms(recipient, content);
+    const sent = result.ok;
+    if (!sent && "error" in result && /not set|not configured/i.test(result.error)) {
+      return false;
+    }
     await db.notification.create({
       data: {
         businessId,
@@ -36,6 +40,7 @@ export async function sendNotification(input: CreateNotificationInput) {
         status: sent ? "SENT" : "FAILED",
         sentAt: sent ? new Date() : null,
         metadata: metadata ? JSON.stringify(metadata) : null,
+        error: !sent && "error" in result ? result.error : null,
       },
     });
     return sent;

@@ -41,8 +41,11 @@ export async function sendEmail(options: SendEmailOptions): Promise<SendEmailRes
     });
 
     if (error) {
+      const errMsg = typeof error === "object" && error !== null && "message" in error
+        ? (error as { message?: string }).message
+        : String(error);
       console.error("Resend error:", error);
-      return { success: false, error: error.message };
+      return { success: false, error: errMsg || JSON.stringify(error) };
     }
 
     return { success: true, id: data?.id };

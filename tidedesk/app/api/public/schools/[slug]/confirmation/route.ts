@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 import Stripe from "stripe";
 import { prisma } from "@/lib/prisma";
+import { notificationService } from "@/services/notificationService";
 
 function getStripe() {
   const key = process.env.STRIPE_SECRET_KEY;
@@ -33,15 +34,23 @@ export async function GET(
   }
 
   let resolvedBookingId: string | null | undefined = bookingId || undefined;
+  let session: Stripe.Checkout.Session | null = null;
 
-  if (!resolvedBookingId && sessionId) {
+  if (sessionId) {
     try {
       const stripe = getStripe();
-      const session = await stripe.checkout.sessions.retrieve(sessionId, {
-        expand: [],
+      if (!business.stripeAccountId) {
+        return Response.json(
+          { error: "This school does not have payment configured" },
+          { status: 400 }
+        );
+      }
+      session = await stripe.checkout.sessions.retrieve(sessionId, {
+        stripeAccount: business.stripeAccountId,
       });
       const metadata = session.metadata as Record<string, string> | null;
-      resolvedBookingId = metadata?.bookingId?.trim() ?? undefined;
+      const bid = metadata?.bookingId?.trim();
+      resolvedBookingId = resolvedBookingId || bid || undefined;
       const sessionBusinessId = metadata?.businessId?.trim();
       if (sessionBusinessId && sessionBusinessId !== business.id) {
         return Response.json(
@@ -76,9 +85,48 @@ export async function GET(
     return Response.json({ error: "Booking not found" }, { status: 404 });
   }
 
-  const paidPayment = await prisma.payment.findFirst({
+  let paidPayment = await prisma.payment.findFirst({
     where: { bookingId: booking.id, status: "PAID" },
   });
+
+  if (!paidPayment && session?.payment_status === "paid" && session?.metadata?.bookingId) {
+    const pi =
+      typeof session.payment_intent === "string"
+        ? session.payment_intent
+        : session.payment_intent?.id;
+    if (pi) {
+      const existing = await prisma.payment.findFirst({
+        where: { stripePaymentIntentId: pi },
+      });
+      if (!existing) {
+        try {
+          await prisma.payment.create({
+            data: {
+              businessId: business.id,
+              amount: (session.amount_total ?? 0) / 100,
+              currency: (session.currency ?? "nzd").toUpperCase(),
+              method: "ONLINE",
+              provider: "STRIPE",
+              status: "PAID",
+              stripePaymentIntentId: pi,
+              stripeSessionId: session.id,
+              bookingId: resolvedBookingId!,
+              rentalId: null,
+            },
+          });
+          paidPayment = await prisma.payment.findFirst({
+            where: { bookingId: booking.id, status: "PAID" },
+          });
+          if (paidPayment) {
+            notificationService.sendPaymentReceipt(paidPayment.id).catch(() => {});
+          }
+          notificationService.sendBookingConfirmation(resolvedBookingId!).catch(() => {});
+        } catch {
+          // Webhook may process later
+        }
+      }
+    }
+  }
 
   return Response.json({
     booking: {
