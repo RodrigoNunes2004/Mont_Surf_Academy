@@ -15,6 +15,10 @@ const ALLOWED_KEYS = [
   "defaultPaymentMethod",
   "latitude",
   "longitude",
+  "onlineBookingEnabled",
+  "onlineBookingMessage",
+  "businessHoursOpen",
+  "businessHoursClose",
 ] as const;
 
 const VALID_PAYMENT_METHODS = Object.values(PaymentMethod);
@@ -73,11 +77,33 @@ export async function PATCH(req: NextRequest) {
       }
       data[key] = val.trim();
     } else if (
-      ["location", "contactEmail", "phone", "address", "timezone", "currency", "logoUrl"].includes(
-        key,
-      )
+      [
+        "location",
+        "contactEmail",
+        "phone",
+        "address",
+        "timezone",
+        "currency",
+        "logoUrl",
+        "onlineBookingMessage",
+      ].includes(key)
     ) {
       data[key] = typeof val === "string" ? val.trim() || null : null;
+    } else if (key === "onlineBookingEnabled") {
+      data[key] = val === true || val === "true";
+    } else if (key === "businessHoursOpen" || key === "businessHoursClose") {
+      if (val === null || val === "" || val === undefined) {
+        data[key] = null;
+      } else {
+        const n = typeof val === "number" ? val : Number(val);
+        if (!Number.isInteger(n) || n < 0 || n > 23) {
+          return NextResponse.json(
+            { error: `${key} must be an integer 0–23.` },
+            { status: 400 }
+          );
+        }
+        data[key] = n;
+      }
     } else if (key === "latitude") {
       if (val === null || val === "") {
         data[key] = null;
@@ -111,11 +137,18 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json({ error: "No valid fields to update." }, { status: 400 });
   }
 
-  const business = await prisma.business.update({
-    where: { id: businessId },
-    data: data as Parameters<typeof prisma.business.update>[0]["data"],
-  });
-
-  return NextResponse.json({ data: business });
+  try {
+    const business = await prisma.business.update({
+      where: { id: businessId },
+      data: data as Parameters<typeof prisma.business.update>[0]["data"],
+    });
+    return NextResponse.json({ data: business });
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    return NextResponse.json(
+      { error: "Failed to update business.", details: msg },
+      { status: 500 },
+    );
+  }
 }
 

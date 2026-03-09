@@ -91,7 +91,13 @@ export default async function SettingsPage({ searchParams }: { searchParams: Sea
         </TabsContent>
 
         <TabsContent value="profile" className="space-y-4">
-          <OnlineBookingSection slug={business.slug} />
+          <OnlineBookingSection
+            slug={business.slug}
+            onlineBookingEnabled={(business as { onlineBookingEnabled?: boolean }).onlineBookingEnabled ?? true}
+            onlineBookingMessage={(business as { onlineBookingMessage?: string | null }).onlineBookingMessage ?? null}
+            businessHoursOpen={(business as { businessHoursOpen?: number | null }).businessHoursOpen ?? null}
+            businessHoursClose={(business as { businessHoursClose?: number | null }).businessHoursClose ?? null}
+          />
           <Card>
             <CardHeader>
               <CardTitle>Business Profile</CardTitle>

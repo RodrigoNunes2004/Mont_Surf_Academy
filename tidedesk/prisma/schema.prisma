@@ -27,6 +27,12 @@ model Business {
   payoutsEnabled      Boolean   @default(false)
   detailsSubmitted    Boolean   @default(false)
 
+  // Online booking settings
+  onlineBookingEnabled   Boolean  @default(true)
+  onlineBookingMessage   String?  @db.Text
+  businessHoursOpen      Int?     // Hour 0–23 (e.g. 7 = 7am), null = default 7
+  businessHoursClose     Int?     // Hour 0–23 (e.g. 17 = 5pm), null = default 17
+
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 

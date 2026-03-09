@@ -16,22 +16,12 @@ export async function GET(
 
   const business = await prisma.business.findUnique({
     where: { slug: slug.trim() },
-    select: {
-      id: true,
-      name: true,
-      slug: true,
-      location: true,
-      timezone: true,
-      currency: true,
-      logoUrl: true,
-      stripeAccountId: true,
-      chargesEnabled: true,
-    },
   });
 
   if (!business) {
     return Response.json({ error: "School not found" }, { status: 404 });
   }
+  const biz = business as { onlineBookingEnabled?: boolean; onlineBookingMessage?: string | null };
 
   const lessons = await prisma.lesson.findMany({
     where: { businessId: business.id },
@@ -84,6 +74,8 @@ export async function GET(
       canAcceptPayments: Boolean(
         business.stripeAccountId && business.chargesEnabled
       ),
+      onlineBookingEnabled: biz.onlineBookingEnabled ?? true,
+      onlineBookingMessage: (biz.onlineBookingMessage ? String(biz.onlineBookingMessage).trim() : "") || null,
     },
     lessons: lessons.map((l) => ({
       id: l.id,

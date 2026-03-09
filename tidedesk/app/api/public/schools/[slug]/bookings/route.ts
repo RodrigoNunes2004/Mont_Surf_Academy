@@ -88,6 +88,13 @@ export async function POST(
   if (!business) {
     return Response.json({ error: "School not found" }, { status: 404 });
   }
+  const biz = business as { onlineBookingEnabled?: boolean; onlineBookingMessage?: string | null };
+  if (biz.onlineBookingEnabled === false) {
+    const customMsg = biz.onlineBookingMessage ? String(biz.onlineBookingMessage).trim() : "";
+    const msg =
+      customMsg || "Online booking is currently unavailable. Please contact the school to book.";
+    return Response.json({ error: msg }, { status: 403 });
+  }
 
   const lesson = await prisma.lesson.findFirst({
     where: { id: lessonId, businessId: business.id },

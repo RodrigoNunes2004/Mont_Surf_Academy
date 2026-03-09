@@ -32,7 +32,7 @@
 - **Scope:** Resend or SendGrid integration; wire to `notificationJob`
 - **Deps:** API keys in env
 
-### Option B — Online Booking Settings
+### Option B — Online Booking Settings ✅ (Done)
 - **Goal:** Control how public booking behaves per business
 - **Scope:** Enable/disable online booking, custom messages, business hours
 - **Deps:** DB fields on Business, settings UI
@@ -56,7 +56,7 @@
 | Public booking  | Done + audit | Race fixes, validation, confirmation fixes       |
 | Weather engine  | Done        | Stormglass, WEATHER_ALERT, daily cron            |
 | SMS reminders   | Done        | 24h booking reminder via Twilio (if configured) |
-| Email reminders | Pending     | Not yet implemented                              |
+| Email reminders | Done        | Resend, confirmation, receipt, 24h reminder     |
 | Vercel deploy   | Done        | Crons: notifications 8am UTC, weather 6am UTC    |
 | Business form   | Done        | Sections, validation, lat/lng                   |
 
@@ -64,6 +64,6 @@
 
 ## Suggested Order
 
-1. **Email notifications** — completes the reminder/confirmation story
-2. **Online booking settings** — per-business control
+1. ~~**Email notifications**~~ — Done (Resend)
+2. ~~**Online booking settings**~~ — Done (enable/disable, message, business hours)
 3. **Rate limiting + slots optimization** — production hardening

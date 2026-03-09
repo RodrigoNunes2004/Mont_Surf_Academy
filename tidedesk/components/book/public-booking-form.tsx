@@ -35,6 +35,8 @@ type SchoolData = {
     timezone: string;
     currency: string;
     canAcceptPayments: boolean;
+    onlineBookingEnabled?: boolean;
+    onlineBookingMessage?: string | null;
   };
   lessons: Lesson[];
   boardVariants: BoardVariant[];
@@ -303,6 +305,19 @@ export function PublicBookingForm({ businessSlug }: { businessSlug: string }) {
       <Card>
         <CardContent className="pt-6">
           <p className="text-destructive">{error}</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (data.business.onlineBookingEnabled === false) {
+    const msg =
+      data.business.onlineBookingMessage?.trim() ||
+      "Online booking is currently unavailable. Please contact the school to book.";
+    return (
+      <Card>
+        <CardContent className="pt-6">
+          <p className="text-muted-foreground whitespace-pre-wrap">{msg}</p>
         </CardContent>
       </Card>
     );
