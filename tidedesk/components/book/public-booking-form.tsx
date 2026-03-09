@@ -320,41 +320,38 @@ export function PublicBookingForm({ businessSlug }: { businessSlug: string }) {
             ) : (
               <div className="flex flex-col gap-2">
                 <div
-                  className="w-full max-w-full overflow-x-scroll overflow-y-hidden rounded-md border border-input pb-1"
-                  style={{ scrollbarGutter: "stable" }}
+                  className="grid max-h-44 grid-cols-4 gap-2 overflow-y-scroll rounded-md border border-input p-2 sm:grid-cols-5"
+                  style={{
+                    scrollbarWidth: "thin",
+                    MsOverflowStyle: "scrollbar",
+                  }}
                 >
-                  <div className="flex flex-nowrap gap-2 p-2">
-                    {displaySlots.map((s) => {
-                      const start = new Date(s.start);
-                      const tz = data?.business?.timezone ?? "Pacific/Auckland";
-                      const label = start.toLocaleTimeString([], {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                        timeZone: tz,
-                      });
-                      return (
-                        <Button
-                          key={s.start}
-                          type="button"
-                          variant={displaySlot?.start === s.start ? "default" : "outline"}
-                          size="sm"
-                          className="shrink-0 text-sm"
-                          onClick={() => setSlot(s)}
-                        >
-                          {label}
-                        </Button>
-                      );
-                    })}
-                  </div>
+                  {displaySlots.map((s) => {
+                    const start = new Date(s.start);
+                    const tz = data?.business?.timezone ?? "Pacific/Auckland";
+                    const label = start.toLocaleTimeString([], {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                      timeZone: tz,
+                    });
+                    return (
+                      <Button
+                        key={s.start}
+                        type="button"
+                        variant={displaySlot?.start === s.start ? "default" : "outline"}
+                        size="sm"
+                        className="text-sm"
+                        onClick={() => setSlot(s)}
+                      >
+                        {label}
+                      </Button>
+                    );
+                  })}
                 </div>
-                <div className="flex flex-wrap items-center justify-between gap-1 text-xs text-muted-foreground">
-                  <span>
-                    Times shown in {data?.business?.timezone ?? "Pacific/Auckland"}
-                  </span>
-                  {displaySlots.length > 6 && (
-                    <span>← Scroll for more →</span>
-                  )}
-                </div>
+                <p className="text-xs text-muted-foreground">
+                  Times in {data?.business?.timezone ?? "Pacific/Auckland"}
+                  {displaySlots.length > 8 && " • Scroll down for more"}
+                </p>
               </div>
             )}
           </div>
