@@ -2,6 +2,7 @@ import { NextRequest } from "next/server";
 import { unstable_cache } from "next/cache";
 import { fromZonedTime } from "date-fns-tz";
 import { prisma } from "@/lib/prisma";
+import { LESSON_END_CUTOFF_HOUR } from "@/lib/lesson-hours";
 
 const ACTIVE_BOOKING_STATUSES = ["BOOKED", "CHECKED_IN"] as ("BOOKED" | "CHECKED_IN")[];
 const DEFAULT_SLOT_START_HOUR = 7;
@@ -70,7 +71,8 @@ export async function GET(
   const biz = business as { timezone?: string | null; businessHoursOpen?: number | null; businessHoursClose?: number | null };
   const tz = biz.timezone?.trim() || "Pacific/Auckland";
   const slotStartHour = biz.businessHoursOpen ?? DEFAULT_SLOT_START_HOUR;
-  const slotEndHour = biz.businessHoursClose ?? DEFAULT_SLOT_END_HOUR;
+  // Surf lessons must end by 5pm – cap slot end hour regardless of business hours
+  const slotEndHour = Math.min(biz.businessHoursClose ?? DEFAULT_SLOT_END_HOUR, LESSON_END_CUTOFF_HOUR);
 
   const lesson = await prisma.lesson.findFirst({
     where: { id: lessonId, businessId: business.id },

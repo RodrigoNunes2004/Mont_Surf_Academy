@@ -3,6 +3,7 @@ import { BookingStatus, PaymentMethod } from "@prisma/client";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { resolveBusinessId } from "../_lib/tenant";
+import { validateLessonEndTime } from "@/lib/lesson-hours";
 
 const BOOKING_STATUSES = Object.values(BookingStatus);
 const ACTIVE_LESSON_BOOKING_STATUSES = ["BOOKED", "CHECKED_IN"] as BookingStatus[];
@@ -191,6 +192,16 @@ export async function POST(req: NextRequest) {
     }
     if (finalEnd <= startAt) {
       return NextResponse.json({ error: "endAt must be after startAt." }, { status: 400 });
+    }
+
+    // Surf lessons must end by 5pm (too dark for safe surfing)
+    const businessWithTz = await prisma.business.findUnique({
+      where: { id: businessId },
+      select: { timezone: true },
+    });
+    const lessonEndError = validateLessonEndTime(finalEnd, businessWithTz?.timezone);
+    if (lessonEndError) {
+      return NextResponse.json({ error: lessonEndError }, { status: 400 });
     }
 
     // Parse equipment allocations (board + wetsuit for V1)

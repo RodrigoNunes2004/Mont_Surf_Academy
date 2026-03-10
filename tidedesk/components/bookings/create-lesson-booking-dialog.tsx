@@ -69,12 +69,15 @@ export function CreateLessonBookingDialog({
   instructors,
   categories: _categories,
   variants,
+  businessTimezone,
 }: {
   customers: CustomerOption[];
   lessons: LessonOption[];
   instructors: InstructorOption[];
   categories: CategoryOption[];
   variants: VariantOption[];
+  /** Business timezone for display hint (e.g. Pacific/Auckland) */
+  businessTimezone?: string | null;
 }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
@@ -409,6 +412,10 @@ export function CreateLessonBookingDialog({
                 onChange={(e) => setStartAt(e.target.value)}
                 required
               />
+              <p className="text-xs text-muted-foreground">
+                Surf lessons must end by 5:00 PM
+                {businessTimezone ? ` (${businessTimezone})` : ""}.
+              </p>
             </div>
             <div className="grid gap-2">
               <Label htmlFor="participants">Participants</Label>

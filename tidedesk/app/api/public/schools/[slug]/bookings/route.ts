@@ -5,6 +5,7 @@ import { PaymentMethod } from "@prisma/client";
 import { sendNotification } from "@/modules/notifications/notificationService";
 import { notificationService } from "@/services/notificationService";
 import { getIdempotencyResult, setIdempotencyResult } from "@/lib/idempotency";
+import { validateLessonEndTime } from "@/lib/lesson-hours";
 
 const ACTIVE_BOOKING_STATUSES = ["BOOKED", "CHECKED_IN"] as ("BOOKED" | "CHECKED_IN")[];
 
@@ -101,7 +102,11 @@ export async function POST(
   if (!business) {
     return Response.json({ error: "School not found" }, { status: 404 });
   }
-  const biz = business as { onlineBookingEnabled?: boolean; onlineBookingMessage?: string | null };
+  const biz = business as {
+    onlineBookingEnabled?: boolean;
+    onlineBookingMessage?: string | null;
+    timezone?: string | null;
+  };
   if (biz.onlineBookingEnabled === false) {
     const customMsg = biz.onlineBookingMessage ? String(biz.onlineBookingMessage).trim() : "";
     const msg =
@@ -132,6 +137,12 @@ export async function POST(
 
   const durationMinutes = lesson.durationMinutes ?? 60;
   const endAt = new Date(startAt.getTime() + durationMinutes * 60_000);
+
+  // Surf lessons must end by 5pm (too dark for safe surfing)
+  const lessonEndError = validateLessonEndTime(endAt, biz.timezone);
+  if (lessonEndError) {
+    return Response.json({ error: lessonEndError }, { status: 400 });
+  }
 
   if (lesson.capacity != null && participants > lesson.capacity) {
     return Response.json(

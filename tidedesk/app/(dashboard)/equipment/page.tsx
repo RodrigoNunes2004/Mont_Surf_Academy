@@ -2,13 +2,18 @@ import { prisma } from "@/lib/prisma";
 import { requireSession } from "@/lib/server/session";
 import { CreateCategoryDialog } from "@/components/equipment/create-category-dialog";
 import { CreateVariantDialog } from "@/components/equipment/create-variant-dialog";
+import { DeleteCategoryButton } from "@/components/equipment/delete-category-button";
 import { EquipmentVariantsTable } from "@/components/equipment/variants-table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Pagination } from "@/components/ui/pagination";
 import { getInUseByVariant } from "@/lib/equipment-availability";
 import Link from "next/link";
 
-type SearchParams = { category?: string };
+const CATEGORIES_PAGE_SIZE = 12;
+const VARIANTS_PAGE_SIZE = 15;
+
+type SearchParams = { category?: string; catPage?: string; varPage?: string };
 
 type VariantWithAvailability = {
   id: string;
@@ -32,21 +37,29 @@ type PrismaWithCategory = typeof prisma & {
 async function getVariantsWithAvailability(
   businessId: string,
   categoryId: string,
+  page: number,
+  pageSize: number,
 ) {
   const prismaCat = prisma as unknown as PrismaWithCategory;
-  const variants = await prismaCat.equipmentVariant.findMany({
-    where: { businessId, categoryId },
-    orderBy: { label: "asc" },
-    include: {
-      category: { select: { id: true, name: true } },
-    },
-  }) as { id: string; label: string; totalQuantity: number; lowStockThreshold: number; isActive: boolean; category: { id: string; name: string } }[];
+  const skip = (page - 1) * pageSize;
+  const [variants, total] = await Promise.all([
+    prismaCat.equipmentVariant.findMany({
+      where: { businessId, categoryId },
+      orderBy: { label: "asc" },
+      skip,
+      take: pageSize,
+      include: {
+        category: { select: { id: true, name: true } },
+      },
+    }) as Promise<{ id: string; label: string; totalQuantity: number; lowStockThreshold: number; isActive: boolean; category: { id: string; name: string } }[]>,
+    prisma.equipmentVariant.count({ where: { businessId, categoryId } }),
+  ]);
 
   const variantIds = variants.map((v) => v.id);
   const now = new Date();
   const inUseMap = await getInUseByVariant(businessId, variantIds, now, now);
 
-  return variants.map((v) => {
+  const withAvailability = variants.map((v) => {
     const inUse = inUseMap.get(v.id) ?? 0;
     const availableNow = Math.max(0, v.totalQuantity - inUse);
     return {
@@ -56,6 +69,8 @@ async function getVariantsWithAvailability(
       lowStockThreshold: v.lowStockThreshold ?? 2,
     };
   });
+
+  return { variants: withAvailability, total };
 }
 
 export default async function EquipmentPage({
@@ -68,26 +83,41 @@ export default async function EquipmentPage({
 
   const sp = await searchParams;
   const selectedCategoryId = sp.category?.trim() || null;
+  const catPage = Math.max(1, parseInt(sp.catPage ?? "1", 10) || 1);
+  const varPage = Math.max(1, parseInt(sp.varPage ?? "1", 10) || 1);
 
   const prismaCat = prisma as unknown as PrismaWithCategory;
-  const [categories, selectedCategory, variants] = await Promise.all([
-    prismaCat.equipmentCategory.findMany({
-      where: { businessId },
-      orderBy: { name: "asc" },
-      include: {
-        _count: { select: { variants: true } },
-      },
-    }),
-    selectedCategoryId
-      ? prismaCat.equipmentCategory.findFirst({
-          where: { id: selectedCategoryId, businessId },
-          include: { variants: { where: { isActive: true }, orderBy: { label: "asc" } } },
-        })
-      : Promise.resolve(null),
-    selectedCategoryId
-      ? getVariantsWithAvailability(businessId, selectedCategoryId)
-      : Promise.resolve([]) as Promise<VariantWithAvailability[]>,
-  ]);
+  const catSkip = (catPage - 1) * CATEGORIES_PAGE_SIZE;
+  const [categoriesResult, categoriesTotal, selectedCategory, variantsResult] =
+    await Promise.all([
+      prismaCat.equipmentCategory.findMany({
+        where: { businessId },
+        orderBy: { name: "asc" },
+        skip: catSkip,
+        take: CATEGORIES_PAGE_SIZE,
+        include: {
+          _count: { select: { variants: true } },
+        },
+      }),
+      prisma.equipmentCategory.count({ where: { businessId } }),
+      selectedCategoryId
+        ? prismaCat.equipmentCategory.findFirst({
+            where: { id: selectedCategoryId, businessId },
+            include: { variants: { where: { isActive: true }, orderBy: { label: "asc" } } },
+          })
+        : Promise.resolve(null),
+      selectedCategoryId
+        ? getVariantsWithAvailability(
+            businessId,
+            selectedCategoryId,
+            varPage,
+            VARIANTS_PAGE_SIZE,
+          )
+        : Promise.resolve({ variants: [], total: 0 }),
+    ]);
+
+  const categories = categoriesResult as { id: string; name: string; trackSizes: boolean; _count: { variants: number } }[];
+  const { variants, total: variantsTotal } = variantsResult;
 
   return (
     <div className="min-w-0 grid gap-4">
@@ -122,31 +152,46 @@ export default async function EquipmentPage({
                 <span className="font-medium">All</span>
               </div>
             </Link>
-            {(categories as { id: string; name: string; trackSizes: boolean; _count: { variants: number } }[]).map((cat) => {
+            {categories.map((cat) => {
               const isSelected = selectedCategoryId === cat.id;
               return (
-                <Link key={cat.id} href={`/equipment?category=${cat.id}`}>
-                  <div
-                    className={`flex items-center gap-2 rounded-lg border px-4 py-3 transition-colors ${
-                      isSelected
-                        ? "border-primary bg-primary/10"
-                        : "hover:bg-muted/50"
-                    }`}
+                <div
+                  key={cat.id}
+                  className={`flex items-center gap-2 rounded-lg border px-4 py-3 transition-colors ${
+                    isSelected
+                      ? "border-primary bg-primary/10"
+                      : "hover:bg-muted/50"
+                  }`}
+                >
+                  <Link
+                    href={`/equipment?category=${cat.id}`}
+                    className="flex min-w-0 flex-1 items-center gap-2"
                   >
                     <span className="font-medium">{cat.name}</span>
-                    <Badge variant="secondary" className="text-xs">
+                    <Badge variant="secondary" className="text-xs shrink-0">
                       {cat._count.variants} sizes
                     </Badge>
                     {!cat.trackSizes ? (
-                      <Badge variant="outline" className="text-xs">
+                      <Badge variant="outline" className="text-xs shrink-0">
                         No sizes
                       </Badge>
                     ) : null}
-                  </div>
-                </Link>
+                  </Link>
+                  <DeleteCategoryButton
+                    categoryId={cat.id}
+                    categoryName={cat.name}
+                    variantCount={cat._count.variants}
+                  />
+                </div>
               );
             })}
           </div>
+          <Pagination
+            totalItems={categoriesTotal}
+            pageSize={CATEGORIES_PAGE_SIZE}
+            currentPage={catPage}
+            paramKey="catPage"
+          />
         </CardContent>
       </Card>
 
@@ -165,6 +210,12 @@ export default async function EquipmentPage({
           </CardHeader>
           <CardContent>
             <EquipmentVariantsTable variants={variants as VariantWithAvailability[]} />
+            <Pagination
+              totalItems={variantsTotal}
+              pageSize={VARIANTS_PAGE_SIZE}
+              currentPage={varPage}
+              paramKey="varPage"
+            />
           </CardContent>
         </Card>
       ) : selectedCategoryId ? (

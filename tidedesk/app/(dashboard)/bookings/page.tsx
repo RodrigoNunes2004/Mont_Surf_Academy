@@ -1,22 +1,10 @@
 import Link from "next/link";
 import { BookingStatus } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
-import { formatCurrency } from "@/lib/currency";
 import { requireSession } from "@/lib/server/session";
-import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { CreateLessonBookingDialog } from "@/components/bookings/create-lesson-booking-dialog";
-import { CancelBookingButton, CompleteBookingButton, NoShowBookingButton } from "@/components/bookings/booking-actions";
-import { CheckInBookingDialog } from "@/components/bookings/check-in-booking-dialog";
-import { PayBookingButton } from "@/components/bookings/pay-booking-button";
+import { BookingsTableWithBulkActions } from "@/components/bookings/bookings-table-with-bulk-actions";
 import { LessonsTabContent } from "@/components/bookings/lessons-tab-content";
 
 type SearchParams = {
@@ -24,18 +12,6 @@ type SearchParams = {
   payment?: string;
   tab?: string;
 };
-
-function statusBadge(status: BookingStatus) {
-  if (status === BookingStatus.CANCELLED)
-    return <Badge variant="secondary">Cancelled</Badge>;
-  if (status === BookingStatus.NO_SHOW)
-    return <Badge variant="secondary">No-show</Badge>;
-  if (status === BookingStatus.CHECKED_IN)
-    return <Badge variant="secondary">Checked in</Badge>;
-  if (status === BookingStatus.COMPLETED)
-    return <Badge variant="secondary">Completed</Badge>;
-  return <Badge>Booked</Badge>;
-}
 
 export default async function BookingsPage({
   searchParams,
@@ -59,7 +35,7 @@ export default async function BookingsPage({
   const [business, customers, lessons, instructors, categories, variants, bookings] = await Promise.all([
     prisma.business.findUnique({
       where: { id: businessId },
-      select: { chargesEnabled: true, stripeAccountId: true, currency: true },
+      select: { chargesEnabled: true, stripeAccountId: true, currency: true, timezone: true },
     }),
     prisma.customer.findMany({
       where: { businessId, archivedAt: null } as never,
@@ -169,6 +145,7 @@ export default async function BookingsPage({
               instructors={instructors}
               categories={categories}
               variants={variants}
+              businessTimezone={business?.timezone}
             />
           </div>
 
@@ -191,87 +168,11 @@ export default async function BookingsPage({
           </div>
         </CardHeader>
         <CardContent>
-          <div className="min-w-0 overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Customer</TableHead>
-                  <TableHead>Instructor</TableHead>
-                  <TableHead>Lesson</TableHead>
-                  <TableHead>Start</TableHead>
-                  <TableHead>End</TableHead>
-                  <TableHead>Participants</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {bookings.map((b) => {
-                  const canCancel = b.status === BookingStatus.BOOKED && b.startAt > now;
-                  const canCheckIn = b.status === BookingStatus.BOOKED && !b.rental;
-                  const canComplete = b.status === BookingStatus.CHECKED_IN;
-                  const hasStripePayment = (b.payments?.length ?? 0) > 0;
-                  const canPay =
-                    business?.chargesEnabled &&
-                    business?.stripeAccountId &&
-                    b.lesson &&
-                    !hasStripePayment &&
-                    (b.status === BookingStatus.BOOKED || b.status === BookingStatus.CHECKED_IN);
-                  return (
-                    <TableRow key={b.id}>
-                      <TableCell className="font-medium">
-                        {b.customer.firstName} {b.customer.lastName}
-                      </TableCell>
-                      <TableCell>
-                        {b.instructor
-                          ? `${b.instructor.firstName} ${b.instructor.lastName}`
-                          : "—"}
-                      </TableCell>
-                      <TableCell>
-                        {b.lesson?.title ?? "—"}
-                        {b.lesson?.durationMinutes
-                          ? ` • ${b.lesson.durationMinutes} min`
-                          : ""}
-                      </TableCell>
-                      <TableCell>{new Date(b.startAt).toLocaleString()}</TableCell>
-                      <TableCell>{new Date(b.endAt).toLocaleString()}</TableCell>
-                      <TableCell>{b.participants}</TableCell>
-                      <TableCell>{statusBadge(b.status)}</TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex flex-wrap justify-end gap-1 sm:gap-2">
-                          {canPay ? (
-                            <PayBookingButton
-                              bookingId={b.id}
-                              amount={formatCurrency(Number(b.lesson!.price) * b.participants, business?.currency)}
-                            />
-                          ) : null}
-                          {canCheckIn ? (
-                            <CheckInBookingDialog bookingId={b.id} />
-                          ) : null}
-                          {canComplete ? (
-                            <CompleteBookingButton bookingId={b.id} />
-                          ) : null}
-                          {canCancel ? (
-                            <>
-                              <CancelBookingButton bookingId={b.id} />
-                              <NoShowBookingButton bookingId={b.id} />
-                            </>
-                          ) : null}
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
-                {bookings.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={8} className="py-8 text-center">
-                      No bookings found.
-                    </TableCell>
-                  </TableRow>
-                ) : null}
-              </TableBody>
-            </Table>
-          </div>
+          <BookingsTableWithBulkActions
+            bookings={bookings}
+            business={business}
+            now={now}
+          />
         </CardContent>
           </Card>
         </>

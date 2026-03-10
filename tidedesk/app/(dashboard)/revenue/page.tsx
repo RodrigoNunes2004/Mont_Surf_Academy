@@ -2,9 +2,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PaymentStatus } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { requireSession } from "@/lib/server/session";
-import Link from "next/link";
+import { RevenueChart } from "@/components/revenue/revenue-chart";
 
 type SearchParams = { range?: string };
+
+type ChartPoint = { label: string; amount: number; date: string };
 
 function currencySymbol(currency: string | null | undefined): string {
   const c = (currency ?? "NZD").toUpperCase();
@@ -12,6 +14,8 @@ function currencySymbol(currency: string | null | undefined): string {
   if (c === "USD") return "$";
   if (c === "EUR") return "€";
   if (c === "GBP") return "£";
+  if (c === "AUD") return "A$";
+  if (c === "BRL") return "R$";
   return c + " ";
 }
 
@@ -42,7 +46,13 @@ export default async function RevenuePage({
   startOfChart.setDate(now.getDate() - chartDays + 1);
   startOfChart.setHours(0, 0, 0, 0);
 
-  const [business, todayRevenue, weekRevenue, monthRevenue, byRental, byBooking, dailyPayments, todaysRentalsCount, todaysLessonsCount, rentalStats] =
+  const startOf12Weeks = new Date(now);
+  startOf12Weeks.setDate(now.getDate() - 12 * 7);
+  startOf12Weeks.setHours(0, 0, 0, 0);
+
+  const startOf12Months = new Date(now.getFullYear(), now.getMonth() - 12, 1);
+
+  const [business, todayRevenue, weekRevenue, monthRevenue, byRental, byBooking, dailyPayments, payments12Weeks, payments12Months, todaysRentalsCount, todaysLessonsCount, rentalStats] =
     await Promise.all([
       prisma.business.findUnique({
         where: { id: businessId },
@@ -96,6 +106,22 @@ export default async function RevenuePage({
         },
         select: { amount: true, paidAt: true },
       }),
+      prisma.payment.findMany({
+        where: {
+          businessId,
+          status: PaymentStatus.PAID,
+          paidAt: { gte: startOf12Weeks, lte: endOfDay },
+        },
+        select: { amount: true, paidAt: true },
+      }),
+      prisma.payment.findMany({
+        where: {
+          businessId,
+          status: PaymentStatus.PAID,
+          paidAt: { gte: startOf12Months, lte: endOfDay },
+        },
+        select: { amount: true, paidAt: true },
+      }),
       prisma.rental.count({
         where: {
           businessId,
@@ -138,10 +164,60 @@ export default async function RevenuePage({
     const amt = Number(p.amount);
     dailyMap.set(key, (dailyMap.get(key) ?? 0) + amt);
   }
-  const chartData = Array.from(dailyMap.entries())
+  const dailyChartData: ChartPoint[] = Array.from(dailyMap.entries())
     .sort(([a], [b]) => a.localeCompare(b))
-    .map(([date, amount]) => ({ date, amount }));
-  const maxAmount = Math.max(1, ...chartData.map((d) => d.amount));
+    .map(([date, amount]) => ({
+      label: new Date(date).toLocaleDateString("en-NZ", { day: "numeric", month: "short" }),
+      amount,
+      date,
+    }));
+
+  const weeklyMap = new Map<string, number>();
+  for (let w = 0; w < 12; w++) {
+    const d = new Date(startOf12Weeks);
+    d.setDate(startOf12Weeks.getDate() + w * 7);
+    d.setDate(d.getDate() - d.getDay());
+    const key = d.toISOString().slice(0, 10);
+    weeklyMap.set(key, 0);
+  }
+  for (const p of payments12Weeks) {
+    const d = new Date(p.paidAt);
+    d.setDate(d.getDate() - d.getDay());
+    const key = d.toISOString().slice(0, 10);
+    if (weeklyMap.has(key)) {
+      weeklyMap.set(key, weeklyMap.get(key)! + Number(p.amount));
+    }
+  }
+  const weeklyChartData: ChartPoint[] = Array.from(weeklyMap.entries())
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([date, amount]) => ({
+      label: new Date(date).toLocaleDateString("en-NZ", { day: "numeric", month: "short" }) + " wk",
+      amount,
+      date,
+    }));
+
+  const monthlyMap = new Map<string, number>();
+  for (let m = 0; m < 12; m++) {
+    const d = new Date(now.getFullYear(), now.getMonth() - 12 + m, 1);
+    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+    monthlyMap.set(key, 0);
+  }
+  for (const p of payments12Months) {
+    const d = new Date(p.paidAt);
+    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+    monthlyMap.set(key, (monthlyMap.get(key) ?? 0) + Number(p.amount));
+  }
+  const monthlyChartData: ChartPoint[] = Array.from(monthlyMap.entries())
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([date, amount]) => {
+      const [y, m] = date.split("-");
+      const monthName = new Date(Number(y), Number(m) - 1).toLocaleDateString("en-NZ", {
+        month: "short",
+        year: "2-digit",
+      });
+      return { label: monthName, amount, date };
+    });
+
   const symbol = currencySymbol(business?.currency);
 
   return (
@@ -240,59 +316,19 @@ export default async function RevenuePage({
 
       <Card>
         <CardHeader>
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <CardTitle className="text-base">Revenue by date</CardTitle>
-              <p className="text-sm text-muted-foreground">
-                Last {chartDays} days
-              </p>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              <Link
-                href="/revenue?range=14"
-                className={`rounded px-3 py-1.5 text-sm font-medium transition-colors ${
-                  chartDays === 14 ? "bg-primary text-primary-foreground" : "hover:bg-muted"
-                }`}
-              >
-                14 days
-              </Link>
-              <Link
-                href="/revenue?range=30"
-                className={`rounded px-3 py-1.5 text-sm font-medium transition-colors ${
-                  chartDays === 30 ? "bg-primary text-primary-foreground" : "hover:bg-muted"
-                }`}
-              >
-                30 days
-              </Link>
-            </div>
-          </div>
+          <CardTitle className="text-base">Revenue over time</CardTitle>
+          <p className="text-sm text-muted-foreground">
+            Hover over the chart to see amounts. Switch between daily, weekly, and monthly views.
+          </p>
         </CardHeader>
         <CardContent>
-          <div className="min-w-0 overflow-x-auto">
-            <div className="flex min-w-max items-end gap-0.5 sm:gap-1 h-32 px-1">
-            {chartData.map(({ date, amount }) => (
-              <div
-                key={date}
-                className="flex flex-1 flex-col items-center gap-1"
-                title={`${date}: ${symbol}${amount.toFixed(2)}`}
-              >
-                <div
-                  className="w-full min-w-2 rounded-t bg-primary/80 transition-opacity hover:opacity-90"
-                  style={{
-                    height: `${(amount / maxAmount) * 100}%`,
-                    minHeight: amount > 0 ? "4px" : "0",
-                  }}
-                />
-                <span className="text-[10px] text-muted-foreground">
-                  {new Date(date).toLocaleDateString("en-NZ", {
-                    day: "numeric",
-                    month: "short",
-                  })}
-                </span>
-              </div>
-            ))}
-            </div>
-          </div>
+          <RevenueChart
+            dailyData={dailyChartData}
+            weeklyData={weeklyChartData}
+            monthlyData={monthlyChartData}
+            currencySymbol={symbol}
+            dailyRange={chartDays}
+          />
         </CardContent>
       </Card>
     </div>

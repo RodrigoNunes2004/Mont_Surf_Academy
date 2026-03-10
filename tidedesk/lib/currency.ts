@@ -4,6 +4,7 @@ const CURRENCY_SYMBOLS: Record<string, string> = {
   USD: "$",
   EUR: "€",
   GBP: "£",
+  BRL: "R$",
 };
 
 export function formatCurrency(amount: number, currency?: string | null): string {

@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { EditVariantDialog } from "./edit-variant-dialog";
+import { DeleteVariantButton } from "./delete-variant-button";
 
 type VariantRow = {
   id: string;
@@ -65,13 +66,20 @@ export function EquipmentVariantsTable({
                   </span>
                 </TableCell>
                 <TableCell className="text-right">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => openEdit(v)}
-                  >
-                    Edit
-                  </Button>
+                  <div className="flex items-center justify-end gap-1">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => openEdit(v)}
+                    >
+                      Edit
+                    </Button>
+                    <DeleteVariantButton
+                      variantId={v.id}
+                      label={v.label}
+                      inUse={v.inUse}
+                    />
+                  </div>
                 </TableCell>
               </TableRow>
             );

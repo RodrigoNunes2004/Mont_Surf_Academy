@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import type { BookingStatus } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { resolveBusinessId } from "../../_lib/tenant";
+import { validateLessonEndTime } from "@/lib/lesson-hours";
 
 const BOOKING_STATUSES = ["BOOKED", "CHECKED_IN", "COMPLETED", "CANCELLED", "NO_SHOW"] as const;
 
@@ -60,6 +61,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
       startAt: true,
       endAt: true,
       customerId: true,
+      lessonId: true,
     },
   });
   if (!current) {
@@ -141,6 +143,17 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     const endAt = (data.endAt as Date | undefined) ?? current.endAt;
     if (endAt <= startAt) {
       return NextResponse.json({ error: "endAt must be after startAt." }, { status: 400 });
+    }
+    // Surf lessons must end by 5pm
+    if (current.lessonId) {
+      const business = await prisma.business.findUnique({
+        where: { id: businessId },
+        select: { timezone: true },
+      });
+      const lessonEndError = validateLessonEndTime(endAt, business?.timezone);
+      if (lessonEndError) {
+        return NextResponse.json({ error: lessonEndError }, { status: 400 });
+      }
     }
   }
 
