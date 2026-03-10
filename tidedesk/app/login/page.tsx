@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
@@ -10,7 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
-export default function LoginPage() {
+function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [email, setEmail] = useState("");
@@ -132,6 +132,41 @@ export default function LoginPage() {
               )}
             </div>
           </form>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<LoginFormFallback />}>
+      <LoginForm />
+    </Suspense>
+  );
+}
+
+function LoginFormFallback() {
+  return (
+    <div className="flex min-h-screen flex-col items-center justify-center gap-6 bg-background px-4 py-8">
+      <div className="flex w-full max-w-sm flex-col items-center gap-2">
+        <Link href="/" className="text-sm text-muted-foreground hover:text-foreground self-start">
+          ← Back to TideDesk
+        </Link>
+        <Image
+          src="/TD_logo.png"
+          alt="TideDesk"
+          width={384}
+          height={96}
+          className="h-auto w-full object-contain"
+        />
+      </div>
+      <Card className="w-full max-w-sm">
+        <CardHeader>
+          <CardTitle>Sign in</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="h-[260px] animate-pulse rounded-md bg-muted" />
         </CardContent>
       </Card>
     </div>
