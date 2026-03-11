@@ -42,7 +42,7 @@ export async function POST(req: NextRequest) {
         metadata: { plan },
       },
       success_url: `${baseUrl}/onboarding?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${baseUrl}/pricing`,
+      cancel_url: baseUrl,
       allow_promotion_codes: true,
     });
 

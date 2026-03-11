@@ -1,38 +1,12 @@
-import Image from "next/image";
-import Link from "next/link";
 import { Check } from "lucide-react";
 import { StartTrialButton } from "@/components/landing/start-trial-button";
+import { LandingHeader } from "@/components/landing/landing-header";
 import { PLANS } from "@/lib/plans";
 
 export default function PricingPage() {
   return (
     <div className="min-h-screen bg-background">
-      <header className="border-b">
-        <div className="container mx-auto flex h-16 items-center justify-between px-4">
-          <Link href="/" className="flex items-center gap-2">
-            <Image
-              src="/TD_logo.png"
-              alt="TideDesk"
-              width={40}
-              height={40}
-              className="h-10 w-auto shrink-0"
-            />
-            <span className="font-semibold text-lg">TideDesk</span>
-          </Link>
-          <nav className="flex items-center gap-4">
-            <Link
-              href="/features"
-              className="text-sm text-muted-foreground hover:text-foreground"
-            >
-              Features
-            </Link>
-            <Link href="/login" className="text-sm font-medium">
-              Sign in
-            </Link>
-            <StartTrialButton />
-          </nav>
-        </div>
-      </header>
+      <LandingHeader />
 
       <main className="container mx-auto px-4 py-20">
         <h1 className="text-3xl font-bold text-center mb-4">Pricing</h1>

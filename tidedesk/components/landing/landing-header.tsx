@@ -1,6 +1,6 @@
 "use client";
 
-import { useSyncExternalStore, useState } from "react";
+import { useEffect, useSyncExternalStore, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Menu } from "lucide-react";
@@ -26,6 +26,18 @@ function useMounted() {
 export function LandingHeader() {
   const mounted = useMounted();
   const [open, setOpen] = useState(false);
+  const [bfcacheKey, setBfcacheKey] = useState(0);
+
+  useEffect(() => {
+    function onPageShow(e: PageTransitionEvent) {
+      if (e.persisted) {
+        setOpen(false);
+        setBfcacheKey((k) => k + 1);
+      }
+    }
+    window.addEventListener("pageshow", onPageShow);
+    return () => window.removeEventListener("pageshow", onPageShow);
+  }, []);
 
   return (
     <header className="relative border-b border-black/5">
@@ -65,8 +77,9 @@ export function LandingHeader() {
         </nav>
 
         {/* Mobile menu - only render after mount to avoid Radix aria-controls hydration mismatch */}
+        {/* key forces remount when restored from bfcache (e.g. back from Stripe) */}
         {mounted && (
-        <Sheet open={open} onOpenChange={setOpen}>
+        <Sheet key={bfcacheKey} open={open} onOpenChange={setOpen}>
           <SheetTrigger asChild>
             <Button
               variant="ghost"
