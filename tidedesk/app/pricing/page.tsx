@@ -1,6 +1,7 @@
 import { Check } from "lucide-react";
 import { StartTrialButton } from "@/components/landing/start-trial-button";
 import { LandingHeader } from "@/components/landing/landing-header";
+import { SiteFooter } from "@/components/landing/site-footer";
 import { PLANS } from "@/lib/plans";
 
 export default function PricingPage() {
@@ -48,11 +49,9 @@ export default function PricingPage() {
         </div>
       </main>
 
-      <footer className="border-t py-8 mt-20">
-        <div className="container mx-auto px-4 text-center text-sm text-muted-foreground">
-          © TideDesk
-        </div>
-      </footer>
+      <div className="mt-20">
+        <SiteFooter />
+      </div>
     </div>
   );
 }

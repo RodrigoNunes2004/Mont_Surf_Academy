@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { StartTrialButton } from "@/components/landing/start-trial-button";
 import { LandingHeader } from "@/components/landing/landing-header";
+import { SiteFooter } from "@/components/landing/site-footer";
 import { PLANS } from "@/lib/plans";
 
 const features = [
@@ -146,11 +147,7 @@ export default function LandingPage() {
           </div>
         </section>
 
-        <footer className="border-t py-8">
-          <div className="container mx-auto px-4 text-center text-sm text-muted-foreground">
-            © TideDesk
-          </div>
-        </footer>
+        <SiteFooter />
       </main>
     </div>
   );

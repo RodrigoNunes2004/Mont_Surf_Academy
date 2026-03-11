@@ -18,6 +18,7 @@ type Business = {
   logoUrl?: string | null;
   latitude?: number | string | null;
   longitude?: number | string | null;
+  windguruSpotId?: string | null;
 };
 
 const TIMEZONES = [
@@ -47,6 +48,7 @@ export function BusinessProfileForm({ business }: { business: Business }) {
     currency: business.currency ?? "NZD",
     latitude: business.latitude != null ? String(business.latitude) : "",
     longitude: business.longitude != null ? String(business.longitude) : "",
+    windguruSpotId: business.windguruSpotId ?? "",
   });
 
   function validateForm(): boolean {
@@ -91,11 +93,13 @@ export function BusinessProfileForm({ business }: { business: Business }) {
           currency: form.currency || undefined,
           latitude: form.latitude.trim() ? Number(form.latitude) : null,
           longitude: form.longitude.trim() ? Number(form.longitude) : null,
+          windguruSpotId: form.windguruSpotId.trim() || null,
         }),
       });
-      const data = (await res.json().catch(() => null)) as { error?: string } | null;
+      const data = (await res.json().catch(() => null)) as { error?: string; details?: string } | null;
       if (!res.ok) {
-        setError(data?.error ?? "Failed to save.");
+        const msg = data?.details ? `${data.error} ${data.details}` : (data?.error ?? "Failed to save.");
+        setError(msg);
         return;
       }
       router.refresh();
@@ -171,6 +175,18 @@ export function BusinessProfileForm({ business }: { business: Business }) {
                 Mount Maunganui ≈ 176.185
               </p>
             )}
+          </div>
+          <div className="grid gap-2 sm:col-span-2">
+            <Label htmlFor="windguruSpotId">WindGuru spot ID (optional)</Label>
+            <Input
+              id="windguruSpotId"
+              value={form.windguruSpotId}
+              onChange={(e) => setForm((f) => ({ ...f, windguruSpotId: e.target.value }))}
+              placeholder="e.g. 53"
+            />
+            <p id="windguru-hint" className="text-xs text-muted-foreground">
+              Find your spot on windguru.cz — the number in the URL (e.g. /53) is the spot ID. Adds &quot;View on WindGuru&quot; link to the forecast widget.
+            </p>
           </div>
         </div>
       </div>

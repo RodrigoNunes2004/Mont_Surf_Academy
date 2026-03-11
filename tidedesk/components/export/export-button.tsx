@@ -16,12 +16,12 @@ type Props = {
 };
 
 function exportUrl(type: ExportType, status?: string): string {
-  const u = new URL("/api/export", typeof window !== "undefined" ? window.location.origin : "");
-  u.searchParams.set("type", type);
+  const params = new URLSearchParams();
+  params.set("type", type);
   if (type === "customers" && status) {
-    u.searchParams.set("status", status);
+    params.set("status", status);
   }
-  return u.toString();
+  return "/api/export?" + params.toString();
 }
 
 export function ExportButton({ type }: Props) {

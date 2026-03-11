@@ -8,6 +8,7 @@ import { FeatureGate } from "@/lib/tiers/feature-gate";
 import { ExportButton } from "@/components/export/export-button";
 import { BookingsTableWithBulkActions } from "@/components/bookings/bookings-table-with-bulk-actions";
 import { LessonsTabContent } from "@/components/bookings/lessons-tab-content";
+import { MarineForecastWidget } from "@/components/weather/marine-forecast-widget";
 
 type SearchParams = {
   status?: string;
@@ -118,10 +119,16 @@ export default async function BookingsPage({
     endAt: b.endAt,
     status: b.status,
     participants: b.participants,
-    depositPaid: b.depositPaid,
-    balanceRemaining: b.balanceRemaining,
+    depositPaid: Number(b.depositPaid ?? 0),
+    balanceRemaining: b.balanceRemaining != null ? Number(b.balanceRemaining) : null,
     rental: b.rental,
-    lesson: b.lesson,
+    lesson: b.lesson
+      ? {
+          ...b.lesson,
+          price: Number(b.lesson.price ?? 0),
+          depositAmount: b.lesson.depositAmount != null ? Number(b.lesson.depositAmount) : null,
+        }
+      : null,
     customer: b.customer,
     instructor: b.instructor,
     payments: b.payments,
@@ -179,6 +186,9 @@ export default async function BookingsPage({
               Payment successful. The booking has been marked as paid.
             </div>
           )}
+          <FeatureGate feature="windguru" fallback={null}>
+            <MarineForecastWidget compact />
+          </FeatureGate>
           <div className="flex min-w-0 flex-col gap-3 md:flex-row md:items-center md:justify-between">
             <div>
               <div className="text-xl font-semibold tracking-tight">Bookings</div>

@@ -18,7 +18,7 @@ export type SendEmailResult = {
 export async function sendEmail(options: SendEmailOptions): Promise<SendEmailResult> {
   const apiKey = process.env.RESEND_API_KEY;
   if (!apiKey) {
-    console.warn("Resend: RESEND_API_KEY not set");
+    console.error("[Resend] RESEND_API_KEY not set – emails will not be sent. Add it to your production env (e.g. Vercel → Settings → Environment Variables).");
     return { success: false, error: "Email not configured" };
   }
 

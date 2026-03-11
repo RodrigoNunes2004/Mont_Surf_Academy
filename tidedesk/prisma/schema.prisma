@@ -33,6 +33,8 @@ model Business {
   businessHoursOpen      Int?     // Hour 0–23 (e.g. 7 = 7am), null = default 7
   businessHoursClose     Int?     // Hour 0–23 (e.g. 17 = 5pm), null = default 17
 
+  windguruSpotId        String?  // WindGuru spot ID for "View on WindGuru" link (e.g. 53 for Mount Maunganui)
+
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 

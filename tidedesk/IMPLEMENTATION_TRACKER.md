@@ -50,7 +50,7 @@ Track what's done vs planned for each plan tier. Aligns with the three pricing c
 | # | Feature | Status | Priority | Effort | Notes |
 |---|---------|--------|----------|--------|-------|
 | 1 | Everything in Pro | ✅ | — | — | Inherited |
-| 2 | WindGuru integration | 🔲 | Medium | S | WindGuru API; forecast in booking calendar |
+| 2 | WindGuru integration | ✅ | Medium | S | Marine forecast (wind/swell) on Dashboard, Bookings, Beach; optional WindGuru spot link |
 | 3 | Offline mode | 🔲 | Medium | L | PWA service worker, work offline |
 | 4 | Advanced analytics | 🔶 | Medium | M | Custom ranges, cohort reports, raw export |
 | 5 | POS beach mode | ✅ | High | M | Tablet UI for quick rental, check-in, return |
@@ -58,7 +58,7 @@ Track what's done vs planned for each plan tier. Aligns with the three pricing c
 | 7 | White label | 🔲 | Low | M | Custom domain, remove TideDesk branding |
 | 8 | Integrations (FareHarbor) | 🔲 | Low | L | External booking sync |
 
-**Premium:** 3/8 done, 2 partial, 3 planned · **Maturity: ~40%**
+**Premium:** 4/8 done, 2 partial, 2 planned · **Maturity: ~50%**
 
 ---
 
@@ -72,7 +72,7 @@ Based on impact vs difficulty.
 | ~~11~~ | ~~API access~~ | ✅ Done | High | L | REST API (`/api/v1/*`), API keys, webhooks; `booking.created`, `payment.succeeded` |
 | ~~12~~ | ~~POS beach mode~~ | ✅ Done | High | M | `/beach`: today bookings check-in, active rentals return, quick rental |
 | **13** | Advanced analytics | Next | Medium | M | Revenue by lesson, CLV, repeat rate, instructor performance |
-| **14** | WindGuru integration | — | Medium | S | Wind/swell next to calendar; surf condition awareness |
+| ~~14~~ | ~~WindGuru integration~~ | ✅ Done | — | — | Marine forecast widget on Dashboard, Bookings, Beach; Stormglass data |
 | **15** | White label | — | Low | M | Custom domain, branding; high perceived value |
 | **16** | FareHarbor integration | — | Low | L | External booking imports; more bookings for schools |
 
@@ -84,7 +84,7 @@ Based on impact vs difficulty.
 |------|--------|------|
 | Starter | 100% | Core SaaS complete |
 | Pro | 100% | All features complete |
-| Premium | ~40% | API, POS beach mode; roadmap for analytics, WindGuru, white label |
+| Premium | ~50% | API, POS beach mode, WindGuru forecast; roadmap for analytics, white label |
 
 **Product insight:** TideDesk's strongest differentiator is the combination of **booking + weather intelligence + equipment tracking**. Most booking platforms don't handle surf school logistics — that's the advantage.
 
@@ -112,6 +112,7 @@ Track these to measure SaaS growth:
 - Deposit payments: Lesson.depositAmount, pay deposit/full/balance via Stripe, Pro-gated
 - API access: ApiKey/WebhookEndpoint models, Bearer/X-API-Key auth, v1 bookings/customers/payments, webhook dispatch, settings UI (Premium-gated)
 - POS beach mode: `/beach` tablet UI; check-in today bookings, return active rentals, quick rental (Premium-gated)
+- WindGuru integration: Marine forecast widget (wind/swell) on Dashboard, Bookings, Beach; optional WindGuru spot ID in Settings; Premium-gated
 
 ---
 
@@ -124,3 +125,4 @@ Track these to measure SaaS growth:
 | 2026-03-11 | Deposit payments: schema, lesson CRUD, Stripe checkout (deposit/full/balance), booking widget, webhook |
 | 2026-03-11 | API access: REST API v1, API keys, webhooks, settings API tab (Premium-gated) |
 | 2026-03-11 | POS beach mode: /beach page, check-in, return, quick rental (Premium-gated) |
+| 2026-03-11 | WindGuru integration: marine forecast widget, WindGuru spot ID in Settings (Premium-gated) |

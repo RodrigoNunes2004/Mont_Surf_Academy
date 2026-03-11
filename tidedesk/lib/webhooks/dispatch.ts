@@ -15,6 +15,12 @@ export async function buildBookingPayload(bookingId: string): Promise<Record<str
     },
   });
   if (!b) return null;
+
+  const bScalars = b as { depositPaid?: unknown; balanceRemaining?: unknown };
+  const depositPaid = Number(bScalars.depositPaid ?? 0);
+  const balanceRemaining =
+    bScalars.balanceRemaining != null ? Number(bScalars.balanceRemaining) : null;
+
   return {
     id: b.id,
     businessId: b.businessId,
@@ -25,8 +31,8 @@ export async function buildBookingPayload(bookingId: string): Promise<Record<str
     endAt: b.endAt.toISOString(),
     participants: b.participants,
     status: b.status,
-    depositPaid: Number(b.depositPaid ?? 0),
-    balanceRemaining: b.balanceRemaining != null ? Number(b.balanceRemaining) : null,
+    depositPaid,
+    balanceRemaining,
     customer: b.customer,
     lesson: b.lesson ? { ...b.lesson, price: Number(b.lesson.price) } : null,
     instructor: b.instructor,
@@ -74,7 +80,8 @@ export async function dispatchWebhook(
   event: WebhookEvent,
   payload: Record<string, unknown>
 ): Promise<void> {
-  const endpoints = await prisma.webhookEndpoint.findMany({
+  const webhookEndpoint = (prisma as unknown as { webhookEndpoint: { findMany: (args: object) => Promise<{ id: string; url: string; secret: string }[]>; update: (args: object) => Promise<unknown> } }).webhookEndpoint;
+  const endpoints = await webhookEndpoint.findMany({
     where: {
       businessId,
       isActive: true,
@@ -104,7 +111,7 @@ export async function dispatchWebhook(
         signal: AbortSignal.timeout(10000),
       });
 
-      await prisma.webhookEndpoint.update({
+      await webhookEndpoint.update({
         where: { id: ep.id },
         data: {
           lastTriggeredAt: new Date(),
@@ -117,7 +124,7 @@ export async function dispatchWebhook(
       }
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
-      await prisma.webhookEndpoint.update({
+      await webhookEndpoint.update({
         where: { id: ep.id },
         data: { lastTriggeredAt: new Date(), lastError: msg },
       });

@@ -2,11 +2,15 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BookingStatus, PaymentStatus, RentalStatus } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { requireSession } from "@/lib/server/session";
+import { getBusinessTier } from "@/lib/tiers/get-business-tier";
+import { hasFeature } from "@/lib/tiers";
+import { MarineForecastWidget } from "@/components/weather/marine-forecast-widget";
 
 export default async function DashboardPage() {
   const session = await requireSession();
   const businessId = session.user.businessId;
   const isInstructor = session.user.role === "INSTRUCTOR";
+  const tier = await getBusinessTier(businessId);
 
   // Defensive: if generated enums are stale, filter out undefined.
   const activeBookingStatuses = [BookingStatus.BOOKED, BookingStatus.CHECKED_IN].filter(
@@ -56,6 +60,11 @@ export default async function DashboardPage() {
 
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      {hasFeature(tier, "windguru") && (
+        <div className="md:col-span-2 lg:col-span-4">
+          <MarineForecastWidget />
+        </div>
+      )}
       <Card>
         <CardHeader>
           <CardTitle className="text-sm text-muted-foreground">

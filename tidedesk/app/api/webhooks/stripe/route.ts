@@ -132,9 +132,12 @@ export async function POST(req: NextRequest) {
               }
             }
             try {
-              await notificationService.sendPaymentReceipt(payment.id);
+              const receiptOk = await notificationService.sendPaymentReceipt(payment.id);
+              if (!receiptOk) {
+                console.error("[Stripe webhook] Payment receipt email not sent. Check Notification table (type=PAYMENT_RECEIPT) for error details.");
+              }
             } catch (e) {
-              console.error("Payment receipt email failed:", e);
+              console.error("[Stripe webhook] Payment receipt email failed:", e);
             }
             const paymentPayload = await buildPaymentPayload(payment.id);
             if (paymentPayload) {
@@ -242,9 +245,12 @@ export async function POST(req: NextRequest) {
               }
             }
             try {
-              await notificationService.sendPaymentReceipt(payment.id);
+              const receiptOk = await notificationService.sendPaymentReceipt(payment.id);
+              if (!receiptOk) {
+                console.error("[Stripe webhook] Payment receipt email not sent. Check Notification table (type=PAYMENT_RECEIPT) for error details.");
+              }
             } catch (e) {
-              console.error("Payment receipt email failed:", e);
+              console.error("[Stripe webhook] Payment receipt email failed:", e);
             }
             const paymentPayload = await buildPaymentPayload(payment.id);
             if (paymentPayload) {

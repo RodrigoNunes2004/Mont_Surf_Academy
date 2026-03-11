@@ -11,6 +11,7 @@ import {
   BeachQuickRentalSection,
 } from "@/components/beach";
 import { Button } from "@/components/ui/button";
+import { MarineForecastWidget } from "@/components/weather/marine-forecast-widget";
 import { ArrowLeft } from "lucide-react";
 
 export default async function BeachPage() {
@@ -124,6 +125,11 @@ export default async function BeachPage() {
       </div>
 
       <div className="grid gap-6 p-4 sm:grid-cols-2 lg:grid-cols-3">
+        {hasFeature(tier, "windguru") && (
+          <div className="sm:col-span-2 lg:col-span-3">
+            <MarineForecastWidget compact />
+          </div>
+        )}
         <BeachCheckInSection bookings={bookingsForClient} />
         <BeachReturnSection rentals={rentalsForClient} />
         <BeachQuickRentalSection

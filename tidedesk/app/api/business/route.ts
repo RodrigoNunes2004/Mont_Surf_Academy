@@ -15,6 +15,7 @@ const ALLOWED_KEYS = [
   "defaultPaymentMethod",
   "latitude",
   "longitude",
+  "windguruSpotId",
   "onlineBookingEnabled",
   "onlineBookingMessage",
   "businessHoursOpen",
@@ -130,6 +131,8 @@ export async function PATCH(req: NextRequest) {
         }
         data[key] = n;
       }
+    } else if (key === "windguruSpotId") {
+      data[key] = typeof val === "string" && val.trim() ? val.trim() : null;
     }
   }
 
@@ -145,6 +148,7 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json({ data: business });
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
+    console.error("[PATCH /api/business] Prisma error:", err);
     return NextResponse.json(
       { error: "Failed to update business.", details: msg },
       { status: 500 },
