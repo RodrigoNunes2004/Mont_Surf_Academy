@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 import { randomBytes } from "crypto";
 import { prisma } from "@/lib/prisma";
+import { getAppBaseUrl } from "@/lib/app-url";
 import { resolveSession, rejectIfInstructor } from "@/app/api/_lib/tenant";
 import { notificationService } from "@/services/notificationService";
 
@@ -64,7 +65,22 @@ export async function POST(req: NextRequest) {
   expiresAt.setDate(expiresAt.getDate() + EXPIRY_DAYS);
   const token = randomBytes(32).toString("hex");
 
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+  // Prefer request origin (works for localhost and production)
+  // nextUrl.origin can be unreliable in dev; Host header is more reliable
+  const host = req.headers.get("host") ?? req.headers.get("x-forwarded-host");
+  const proto =
+    req.headers.get("x-forwarded-proto") ??
+    (req.nextUrl?.protocol?.replace(":", "") || "http");
+  const fromRequest =
+    host && host !== "null"
+      ? `${proto === "https" ? "https" : "http"}://${host}`
+      : req.nextUrl?.origin ?? "";
+  const baseUrl =
+    fromRequest &&
+    fromRequest !== "null" &&
+    (fromRequest.startsWith("http://") || fromRequest.startsWith("https://"))
+      ? fromRequest.replace(/\/$/, "")
+      : getAppBaseUrl();
   const inviteUrl = `${baseUrl}/invite/accept?token=${token}`;
 
   const invite = await instructorInvite.upsert({

@@ -75,7 +75,6 @@ export function AccountSection({ avatarUrl: initialAvatarUrl, name, email }: Acc
           <Button
             type="button"
             size="icon"
-            variant="secondary"
             className="absolute -bottom-1 -right-1 size-9 rounded-full border-2 border-background"
             onClick={() => inputRef.current?.click()}
             disabled={loading}

@@ -185,7 +185,7 @@ export default async function CustomersPage({
                   <option value="name_desc">Z → A</option>
                 </select>
               </div>
-              <Button type="submit" variant="secondary" className="h-10">
+              <Button type="submit" className="h-10">
                 Apply
               </Button>
             </form>

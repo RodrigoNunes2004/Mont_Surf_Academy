@@ -177,7 +177,7 @@ export function WebhookEndpointsSection() {
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
                   {ep.isActive ? (
-                    <Badge variant="default" className="bg-green-600">Active</Badge>
+                    <Badge variant="completed">Active</Badge>
                   ) : (
                     <Badge variant="secondary">Inactive</Badge>
                   )}

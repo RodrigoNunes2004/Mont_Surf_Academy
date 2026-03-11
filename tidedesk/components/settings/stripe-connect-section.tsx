@@ -82,7 +82,7 @@ export function StripeConnectSection({
         </div>
         {isConnected ? (
           canAcceptPayments ? (
-            <Badge variant="default" className="bg-green-600 hover:bg-green-600">
+            <Badge variant="completed">
               Ready to accept payments
             </Badge>
           ) : (

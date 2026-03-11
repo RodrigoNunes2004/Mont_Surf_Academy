@@ -93,7 +93,7 @@ export function IntegrationsSection() {
             </p>
           </div>
           {fhIntegration?.isActive && fhIntegration.hasConfig ? (
-            <Badge variant="default" className="bg-green-600 hover:bg-green-600">
+            <Badge variant="completed">
               Connected
             </Badge>
           ) : (
