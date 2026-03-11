@@ -18,6 +18,12 @@ const badgeVariants = cva(
           "border-border text-foreground [a&]:hover:bg-accent [a&]:hover:text-accent-foreground",
         ghost: "[a&]:hover:bg-accent [a&]:hover:text-accent-foreground",
         link: "text-primary underline-offset-4 [a&]:hover:underline",
+        /* Status variants - surf school booking states */
+        booked: "bg-status-booked-muted text-[#0284c7]",
+        checked_in: "bg-status-checked-in-muted text-[#0891b2]",
+        completed: "bg-status-completed-muted text-[#059669]",
+        cancelled: "bg-status-cancelled-muted text-[#dc2626]",
+        no_show: "bg-status-no-show-muted text-[#d97706]",
       },
     },
     defaultVariants: {

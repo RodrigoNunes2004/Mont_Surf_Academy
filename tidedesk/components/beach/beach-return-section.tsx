@@ -61,8 +61,8 @@ export function BeachReturnSection({ rentals }: { rentals: Rental[] }) {
                 </div>
                 <Button
                   size="lg"
-                  variant="secondary"
-                  className="min-h-12 shrink-0 px-6"
+                  variant="outline"
+                  className="beach-action-btn min-h-14 shrink-0 px-8 text-base font-semibold"
                   onClick={() => markReturned(r.id)}
                   disabled={isLoading}
                 >

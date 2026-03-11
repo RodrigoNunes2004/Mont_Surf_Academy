@@ -240,7 +240,7 @@ export function BeachQuickRentalSection({
           <Button
             type="submit"
             size="lg"
-            className="min-h-14 w-full text-base"
+            className="beach-action-btn min-h-14 w-full text-base font-semibold"
             disabled={!canSubmit}
           >
             {loading ? (

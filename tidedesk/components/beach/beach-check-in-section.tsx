@@ -56,12 +56,12 @@ export function BeachCheckInSection({ bookings }: { bookings: Booking[] }) {
                 className="flex items-center justify-between gap-3 rounded-lg border bg-background p-3"
               >
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-medium">{label}</p>
+                  <p className="truncate text-sm font-semibold text-foreground">{label}</p>
                   <p className="text-xs text-muted-foreground">{time}</p>
                 </div>
                 <Button
                   size="lg"
-                  className="min-h-12 shrink-0 px-6"
+                  className="beach-action-btn min-h-14 shrink-0 px-8 text-base font-semibold"
                   onClick={() => checkIn(b.id)}
                   disabled={isLoading}
                 >

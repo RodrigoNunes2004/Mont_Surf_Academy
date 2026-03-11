@@ -57,14 +57,14 @@ type Props = {
 
 function statusBadge(status: BookingStatus) {
   if (status === BookingStatus.CANCELLED)
-    return <Badge variant="secondary">Cancelled</Badge>;
+    return <Badge variant="cancelled">Cancelled</Badge>;
   if (status === BookingStatus.NO_SHOW)
-    return <Badge variant="secondary">No-show</Badge>;
+    return <Badge variant="no_show">No-show</Badge>;
   if (status === BookingStatus.CHECKED_IN)
-    return <Badge variant="secondary">Checked in</Badge>;
+    return <Badge variant="checked_in">Checked in</Badge>;
   if (status === BookingStatus.COMPLETED)
-    return <Badge variant="secondary">Completed</Badge>;
-  return <Badge>Booked</Badge>;
+    return <Badge variant="completed">Completed</Badge>;
+  return <Badge variant="booked">Booked</Badge>;
 }
 
 export function BookingsTableWithBulkActions({
