@@ -8,22 +8,25 @@ import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { useDashboardContext } from "@/lib/dashboard-context";
+import { hasFeature } from "@/lib/tiers";
 import {
   CalendarDays,
   LayoutDashboard,
   Receipt,
   Settings,
   ShoppingBag,
+  Sun,
   User,
   Users,
   UserCircle,
   Waves,
 } from "lucide-react";
 
-const fullNav: { href: string; label: string; icon: typeof LayoutDashboard; roles: UserRole[] }[] = [
+const fullNav: { href: string; label: string; icon: typeof LayoutDashboard; roles: UserRole[]; feature?: string }[] = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard, roles: ["OWNER", "STAFF", "INSTRUCTOR"] },
   { href: "/customers", label: "Customers", icon: Users, roles: ["OWNER", "STAFF", "INSTRUCTOR"] },
   { href: "/rentals", label: "Rentals", icon: ShoppingBag, roles: ["OWNER", "STAFF"] },
+  { href: "/beach", label: "Beach", icon: Sun, roles: ["OWNER", "STAFF"], feature: "pos" },
   { href: "/bookings", label: "Bookings", icon: CalendarDays, roles: ["OWNER", "STAFF", "INSTRUCTOR"] },
   { href: "/equipment", label: "Equipment", icon: Waves, roles: ["OWNER", "STAFF"] },
   { href: "/instructors", label: "Instructors", icon: UserCircle, roles: ["OWNER", "STAFF"] },
@@ -53,7 +56,10 @@ export function DashboardSidebar({ role }: { role: UserRole }) {
       </div>
       <Separator />
       <nav className="flex flex-1 flex-col gap-1 p-2">
-        {fullNav.filter((item) => item.roles.includes(role)).map((item) => {
+        {fullNav
+          .filter((item) => item.roles.includes(role))
+          .filter((item) => !item.feature || hasFeature(ctx?.tier ?? "", item.feature))
+          .map((item) => {
           const active =
             pathname === item.href ||
             (item.href !== "/dashboard" && pathname?.startsWith(item.href));
