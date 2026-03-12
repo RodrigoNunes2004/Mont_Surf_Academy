@@ -116,6 +116,19 @@ Track these to measure SaaS growth:
 
 ---
 
+## Recent Additions (March 2026)
+
+| Feature | Status | Notes |
+|---------|--------|-------|
+| **In-settings upgrade** | ✅ | Settings → Billing: "Subscribe to Premium" when no subscription; no need to log out and use landing page |
+| **Stripe upgrade checkout** | ✅ | POST /api/stripe/checkout/upgrade for logged-in users; links new subscription to existing business |
+| **Subscription webhook** | ✅ | checkout.session.completed (subscription mode) creates/updates Subscription when metadata.businessId present |
+| **Weather widget fallback** | ✅ | Shows "No forecast data available" instead of vanishing when Stormglass returns empty |
+| **Weather API message** | ✅ | Returns message when data empty for better diagnostics |
+| **Premium testing checklist** | ✅ | PREMIUM_TESTING_CHECKLIST.md for end-to-end testing |
+
+---
+
 ## Changelog
 
 | Date | Change |
@@ -126,3 +139,6 @@ Track these to measure SaaS growth:
 | 2026-03-11 | API access: REST API v1, API keys, webhooks, settings API tab (Premium-gated) |
 | 2026-03-11 | POS beach mode: /beach page, check-in, return, quick rental (Premium-gated) |
 | 2026-03-11 | WindGuru integration: marine forecast widget, WindGuru spot ID in Settings (Premium-gated) |
+| 2026-03-11 | Upgrade flow: /api/stripe/checkout/upgrade for existing users; Billing section shows Subscribe to Premium when no subscription; Stripe webhook links subscription to business; marine forecast empty-state fix |
+| 2026-03-11 | In-settings upgrade flow: checkout/upgrade, subscription webhook, BillingSection upgrade UI |
+| 2026-03-11 | Weather widget: empty-state fallback, API message when Stormglass returns empty; PREMIUM_TESTING_CHECKLIST |

@@ -64,7 +64,15 @@ export function MarineForecastWidget({ compact = false }: { compact?: boolean })
   }
 
   if (data.length === 0) {
-    return null;
+    return (
+      <Card>
+        <CardContent className="py-4">
+          <p className="text-sm text-muted-foreground">
+            No forecast data available. Check Stormglass API key and coordinates in Settings → Business.
+          </p>
+        </CardContent>
+      </Card>
+    );
   }
 
   // Show first 12 hours in compact view, or all 24

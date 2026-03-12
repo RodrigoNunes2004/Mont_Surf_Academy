@@ -1,6 +1,6 @@
 # TideDesk — Sprint Tracker
 
-**Last updated:** March 9, 2026
+**Last updated:** March 11, 2026
 
 ---
 
@@ -73,3 +73,4 @@
 2. ~~**Online booking settings**~~ — Done (enable/disable, message, business hours)
 3. ~~**Rate limiting + slots optimization**~~ — Done (Upstash middleware, slots cache 60s)
 4. ~~**Stripe payments polish**~~ — Done (inline errors, currency, hints, canAcceptPayments)
+5. ~~**Upgrade from Settings**~~ — Done (Subscribe to Premium in Billing when no subscription; /api/stripe/checkout/upgrade; webhook links subscription to existing business)

@@ -52,8 +52,14 @@ export async function GET(req: NextRequest) {
     (business as { windguruSpotId?: string | null }).windguruSpotId?.trim() ||
     null;
 
+  const message =
+    data.length === 0
+      ? "No forecast data from Stormglass. Verify API key at stormglass.io."
+      : undefined;
+
   return Response.json({
     data,
     windguruSpotId,
+    ...(message && { message }),
   });
 }
