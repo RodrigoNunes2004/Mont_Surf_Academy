@@ -15,7 +15,7 @@ function formatDaysUntil(date: Date): string {
 }
 
 function formatDate(date: Date): string {
-  return date.toLocaleDateString(undefined, {
+  return date.toLocaleDateString("en-NZ", {
     weekday: "short",
     month: "short",
     day: "numeric",

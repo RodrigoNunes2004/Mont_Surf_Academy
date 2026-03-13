@@ -33,6 +33,11 @@ export function ApiKeysSection() {
   const [newName, setNewName] = useState("");
   const [createdKey, setCreatedKey] = useState<string | null>(null);
   const [revokeId, setRevokeId] = useState<string | null>(null);
+  const [origin, setOrigin] = useState<string>("");
+
+  useEffect(() => {
+    setOrigin(window.location.origin);
+  }, []);
 
   useEffect(() => {
     fetch("/api/api-keys")
@@ -91,7 +96,7 @@ export function ApiKeysSection() {
         </h3>
         <p className="text-sm text-muted-foreground mt-1">
           Use API keys to authenticate requests to the REST API. Base URL:{" "}
-          <code className="rounded bg-muted px-1">{typeof window !== "undefined" ? window.location.origin : ""}/api/v1</code>
+          <code className="rounded bg-muted px-1">{origin || "…"}/api/v1</code>
         </p>
       </div>
 

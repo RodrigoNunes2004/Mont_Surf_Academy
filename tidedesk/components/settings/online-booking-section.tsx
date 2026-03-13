@@ -36,6 +36,9 @@ export function OnlineBookingSection({
   const [openHour, setOpenHour] = useState<number | "">(businessHoursOpen ?? 7);
   const [closeHour, setCloseHour] = useState<number | "">(businessHoursClose ?? 17);
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [baseUrl, setBaseUrl] = useState(
+    () => process.env.NEXT_PUBLIC_APP_URL ?? "https://yoursite.com"
+  );
 
   useEffect(() => {
     setEnabled(onlineBookingEnabled);
@@ -44,10 +47,9 @@ export function OnlineBookingSection({
     setCloseHour(businessHoursClose ?? 17);
   }, [onlineBookingEnabled, onlineBookingMessage, businessHoursOpen, businessHoursClose]);
 
-  const baseUrl =
-    typeof window !== "undefined"
-      ? window.location.origin
-      : process.env.NEXT_PUBLIC_APP_URL ?? "https://yourapp.com";
+  useEffect(() => {
+    setBaseUrl(window.location.origin);
+  }, []);
 
   const bookingUrl = slug ? `${baseUrl}/book/${slug}` : null;
   const embedUrl = slug ? `${baseUrl}/book/${slug}?embed=1` : null;
