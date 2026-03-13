@@ -38,15 +38,18 @@ async function fetchFromStormglass<T>(
   lng: number,
   apiKey: string,
   start?: Date,
-  end?: Date
+  end?: Date,
+  extraParams?: Record<string, string>
 ): Promise<T> {
-
   const params = new URLSearchParams({
     lat: String(lat),
     lng: String(lng),
   });
   if (start) params.set("start", start.toISOString());
   if (end) params.set("end", end.toISOString());
+  for (const [k, v] of Object.entries(extraParams ?? {})) {
+    params.set(k, v);
+  }
 
   const url = `https://api.stormglass.io/v2${path}?${params}`;
   const res = await fetch(url, {
@@ -88,7 +91,8 @@ export async function fetchWeatherForecast(
         lng,
         apiKey,
         now,
-        end
+        end,
+        { params: "waveHeight,swellHeight,windSpeed" }
       ),
       fetchFromStormglass<StormglassTideResponse>(
         "/tide/sea-level/point",

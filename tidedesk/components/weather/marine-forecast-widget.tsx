@@ -147,6 +147,19 @@ export function MarineForecastWidget({ compact = false }: { compact?: boolean })
             </a>
           )}
         </div>
+        {windguruSpotId && (
+          <div className="mt-4">
+            <p className="text-xs text-muted-foreground mb-2">WindGuru forecast</p>
+            <div className="rounded-lg border overflow-hidden bg-muted/30">
+              <iframe
+                title="WindGuru forecast"
+                src={`https://www.windguru.cz/widget-fcst-iframe.php?s=${encodeURIComponent(windguruSpotId)}&p=WINDSPD,GUST,MWINDSPD,SMER,TMP,FLHGT,RATING&wj=knots&tj=c&fhours=168&m=3&vt=forecasts&odh=0&doh=24`}
+                className="w-full border-0"
+                style={{ height: "280px", minHeight: "200px" }}
+              />
+            </div>
+          </div>
+        )}
       </CardContent>
     </Card>
   );
