@@ -38,7 +38,7 @@ export function DashboardSidebar({ role }: { role: UserRole }) {
   const ctx = useDashboardContext();
 
   return (
-    <aside className="flex h-full w-full min-w-0 flex-col border-r bg-sidebar text-sidebar-foreground md:w-64">
+    <aside className="flex h-full w-full min-w-0 flex-col border-r border-slate-800 bg-slate-900 text-slate-200 md:w-64">
       <div className="flex items-center justify-between gap-2 px-4 py-4 min-w-0">
         <Link href="/dashboard" className="flex min-w-0 flex-1 items-center gap-2">
           <Image
@@ -50,11 +50,11 @@ export function DashboardSidebar({ role }: { role: UserRole }) {
           />
           <span className="truncate font-semibold tracking-tight">TideDesk</span>
         </Link>
-        <Badge variant="secondary" className="shrink-0 text-xs">
+        <Badge variant="secondary" className="shrink-0 text-xs bg-slate-800 text-slate-300">
           Internal
         </Badge>
       </div>
-      <Separator />
+      <Separator className="bg-slate-700" />
       <nav className="flex flex-1 flex-col gap-1 p-2">
         {fullNav
           .filter((item) => item.roles.includes(role))
@@ -71,31 +71,31 @@ export function DashboardSidebar({ role }: { role: UserRole }) {
               href={item.href}
               onClick={() => ctx?.closeSidebar()}
               className={cn(
-                "flex min-h-11 items-center gap-2 rounded-md px-3 py-2.5 text-sm transition-colors",
+                "flex min-h-11 items-center gap-2 rounded-md px-3 py-2.5 text-sm transition-colors group",
                 active
-                  ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                  : "hover:bg-sidebar-accent/60 hover:text-sidebar-accent-foreground",
+                  ? "bg-sky-500 text-white"
+                  : "hover:bg-slate-800 hover:text-white",
               )}
             >
-              <Icon className="size-4 shrink-0" />
+              <Icon className="size-4 shrink-0 group-hover:text-sky-400" />
               {item.label}
             </Link>
           );
         })}
       </nav>
-      <Separator />
+      <Separator className="bg-slate-700" />
       <div className="p-2 space-y-1">
         <Link
           href="/account"
           onClick={() => ctx?.closeSidebar()}
           className={cn(
-            "flex min-h-11 items-center gap-2 rounded-md px-3 py-2.5 text-sm transition-colors",
+            "flex min-h-11 items-center gap-2 rounded-md px-3 py-2.5 text-sm transition-colors group",
             pathname?.startsWith("/account")
-              ? "bg-sidebar-accent text-sidebar-accent-foreground"
-              : "hover:bg-sidebar-accent/60 hover:text-sidebar-accent-foreground",
+              ? "bg-sky-500 text-white"
+              : "hover:bg-slate-800 hover:text-white",
           )}
         >
-          <User className="size-4 shrink-0" />
+          <User className="size-4 shrink-0 group-hover:text-sky-400" />
           Account
         </Link>
         {role !== "INSTRUCTOR" && (
@@ -103,13 +103,13 @@ export function DashboardSidebar({ role }: { role: UserRole }) {
             href="/settings"
             onClick={() => ctx?.closeSidebar()}
             className={cn(
-              "flex min-h-11 items-center gap-2 rounded-md px-3 py-2.5 text-sm transition-colors",
+              "flex min-h-11 items-center gap-2 rounded-md px-3 py-2.5 text-sm transition-colors group",
               pathname?.startsWith("/settings")
-                ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                : "hover:bg-sidebar-accent/60 hover:text-sidebar-accent-foreground",
+                ? "bg-sky-500 text-white"
+                : "hover:bg-slate-800 hover:text-white",
             )}
           >
-            <Settings className="size-4 shrink-0" />
+            <Settings className="size-4 shrink-0 group-hover:text-sky-400" />
             Settings
           </Link>
         )}

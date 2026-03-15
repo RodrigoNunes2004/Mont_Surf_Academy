@@ -61,42 +61,43 @@
 :root {
   --radius: 0.625rem;
   /* TideDesk design system - Ocean Blue brand */
-  --background: #ffffff;
+  /* Main area: light background */
+  --background: #f8fafc;
   --foreground: #0f172a;
   --card: #ffffff;
   --card-foreground: #0f172a;
   --popover: #ffffff;
   --popover-foreground: #0f172a;
-  /* Primary: Ocean Blue */
-  --primary: oklch(0.663 0.158 230.36);
+  /* Primary: Ocean Blue (sky-500 / sky-600) */
+  --primary: #0ea5e9;
   --primary-hover: #0284c7;
   --primary-foreground: #ffffff;
   /* Secondary / outline buttons */
   --secondary: #f8fafc;
   --secondary-foreground: #0f172a;
-  --muted: #f8fafc;
+  --muted: #f1f5f9;
   --muted-foreground: #475569;
-  --accent: #f1f5f9;
-  --accent-foreground: #0f172a;
+  --accent: #e0f2fe;
+  --accent-foreground: #0369a1;
   --destructive: oklch(0.627 0.257 29.23);
   --border: #e2e8f0;
   --input: #e2e8f0;
-  --ring: oklch(0.663 0.158 230.36);
+  --ring: #0ea5e9;
   /* Chart colors for dashboards */
-  --chart-1: oklch(0.663 0.158 230.36);
+  --chart-1: #0ea5e9;
   --chart-2: oklch(0.646 0.171 165.61);
   --chart-3: oklch(0.753 0.183 66.42);
   --chart-4: oklch(0.68 0.14 195);
   --chart-5: oklch(0.627 0.257 29.23);
-  /* Sidebar - active state uses ocean blue */
-  --sidebar: #ffffff;
-  --sidebar-foreground: #0f172a;
-  --sidebar-primary: oklch(0.663 0.158 230.36);
+  /* Sidebar: dark ocean (slate-900), active = sky-500 */
+  --sidebar: #0f172a;
+  --sidebar-foreground: #e2e8f0;
+  --sidebar-primary: #0ea5e9;
   --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #e0f2fe;
-  --sidebar-accent-foreground: #0284c7;
-  --sidebar-border: #e2e8f0;
-  --sidebar-ring: oklch(0.663 0.158 230.36);
+  --sidebar-accent: #0ea5e9;
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-border: #1e293b;
+  --sidebar-ring: #0ea5e9;
   /* Status colors for badges */
   --status-booked: oklch(0.663 0.158 230.36);
   --status-booked-muted: #e0f2fe;

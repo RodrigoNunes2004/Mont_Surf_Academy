@@ -36,12 +36,12 @@ export function DashboardTopbar({ onOpenNav }: { onOpenNav: () => void }) {
     .join("");
 
   return (
-    <header className="flex h-14 min-h-14 shrink-0 items-center justify-between border-b bg-background px-3 sm:px-4">
+    <header className="flex h-14 min-h-14 shrink-0 items-center justify-between border-b border-sky-700/30 bg-gradient-to-r from-sky-500 to-sky-600 px-3 sm:px-4 text-white">
       <div className="flex min-w-0 flex-1 items-center gap-2">
         <Button
           variant="ghost"
           size="icon"
-          className="min-h-[44px] min-w-[44px] h-10 w-10 shrink-0 md:hidden touch-manipulation"
+          className="min-h-[44px] min-w-[44px] h-10 w-10 shrink-0 md:hidden touch-manipulation text-white hover:bg-white/15 hover:text-white"
           onClick={onOpenNav}
           aria-label="Open navigation"
         >
@@ -54,7 +54,7 @@ export function DashboardTopbar({ onOpenNav }: { onOpenNav: () => void }) {
 
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" className="min-h-[44px] min-w-[44px] h-10 gap-2 px-2 touch-manipulation">
+          <Button variant="ghost" className="min-h-[44px] min-w-[44px] h-10 gap-2 px-2 touch-manipulation text-white hover:bg-white/15 hover:text-white">
             <Avatar className="size-8">
               {mounted && data?.user?.image ? (
                 <AvatarImage src={data.user.image} alt={name} />
@@ -64,7 +64,7 @@ export function DashboardTopbar({ onOpenNav }: { onOpenNav: () => void }) {
             <div className="hidden flex-col items-start md:flex">
               <div className="text-sm leading-4">{name}</div>
               {email ? (
-                <div className="text-xs text-muted-foreground">{email}</div>
+                <div className="text-xs text-white/80">{email}</div>
               ) : null}
             </div>
           </Button>
