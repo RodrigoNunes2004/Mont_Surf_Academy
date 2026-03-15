@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { SurfForecastLocationSelector } from "@/components/settings/surf-forecast-location-selector";
 
 type Business = {
   id: string;
@@ -176,18 +177,19 @@ export function BusinessProfileForm({ business }: { business: Business }) {
               </p>
             )}
           </div>
-          <div className="grid gap-2 sm:col-span-2">
-            <Label htmlFor="windguruSpotId">WindGuru spot ID (optional)</Label>
-            <Input
-              id="windguruSpotId"
-              value={form.windguruSpotId}
-              onChange={(e) => setForm((f) => ({ ...f, windguruSpotId: e.target.value }))}
-              placeholder="e.g. 53"
-            />
-            <p id="windguru-hint" className="text-xs text-muted-foreground">
-              Find your spot on windguru.cz — the number in the URL (e.g. /53) is the spot ID. Adds &quot;View on WindGuru&quot; link to the forecast widget.
-            </p>
-          </div>
+          <SurfForecastLocationSelector
+            latitude={form.latitude ? Number(form.latitude) : null}
+            longitude={form.longitude ? Number(form.longitude) : null}
+            windguruSpotId={form.windguruSpotId || null}
+            onSelect={({ latitude, longitude, windguruSpotId }) =>
+              setForm((f) => ({
+                ...f,
+                latitude: String(latitude),
+                longitude: String(longitude),
+                windguruSpotId,
+              }))
+            }
+          />
         </div>
       </div>
 

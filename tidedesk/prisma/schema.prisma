@@ -486,3 +486,18 @@ model WebhookEndpoint {
 
   @@index([businessId])
 }
+
+model SurfSpot {
+  id        Int      @id // WindGuru spot ID used in URLs and stored in Business.windguruSpotId
+  name      String
+  latitude  Float
+  longitude Float
+  region    String?
+  country   String
+  source    String?  @default("dataset")
+  createdAt DateTime @default(now())
+
+  @@index([country])
+  @@index([latitude, longitude])
+  @@index([name])
+}

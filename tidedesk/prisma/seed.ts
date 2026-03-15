@@ -3,6 +3,7 @@ import { UserRole } from "@prisma/client";
 import { randomBytes, scrypt as _scrypt } from "crypto";
 import { promisify } from "util";
 import { prisma } from "../lib/prisma";
+import { seedSurfSpots } from "./seedSurfSpots";
 
 // Adapter-based client infers PrismaClientOptions and loses equipment models in IDE; use asserted client
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -213,6 +214,9 @@ async function main() {
       capacity: 1,
     },
   });
+
+  // Surf spots for location selector (Surf Forecast Location)
+  await seedSurfSpots();
 
   // Dev subscription (Pro plan) so tier-gated features like export work locally
   await prisma.subscription.upsert({

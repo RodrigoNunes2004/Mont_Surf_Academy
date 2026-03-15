@@ -45,6 +45,22 @@ export default async function SettingsPage({ searchParams }: { searchParams: Sea
   const avatarUrl = (currentUser as { avatarUrl?: string | null } | null)?.avatarUrl ?? null;
   const hasSubscription = Boolean(subscription?.stripeCustomerId);
 
+  // Serialize for Client Components: Prisma Decimal/Date are not JSON-serializable
+  const businessForProfile = {
+    id: business.id,
+    name: business.name,
+    location: business.location,
+    contactEmail: business.contactEmail,
+    phone: business.phone,
+    address: business.address,
+    timezone: business.timezone,
+    currency: business.currency,
+    logoUrl: business.logoUrl,
+    latitude: business.latitude != null ? Number(business.latitude) : null,
+    longitude: business.longitude != null ? Number(business.longitude) : null,
+    windguruSpotId: business.windguruSpotId,
+  };
+
   return (
     <div className="space-y-6">
       <div>
@@ -120,13 +136,7 @@ export default async function SettingsPage({ searchParams }: { searchParams: Sea
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <BusinessProfileForm
-                business={{
-                  ...business,
-                  latitude: business.latitude != null ? Number(business.latitude) : null,
-                  longitude: business.longitude != null ? Number(business.longitude) : null,
-                }}
-              />
+              <BusinessProfileForm business={businessForProfile} />
             </CardContent>
           </Card>
         </TabsContent>
@@ -218,7 +228,14 @@ export default async function SettingsPage({ searchParams }: { searchParams: Sea
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <PaymentSettingsForm business={business} />
+              <PaymentSettingsForm
+                business={{
+                  id: business.id,
+                  defaultPaymentMethod: business.defaultPaymentMethod,
+                  stripeAccountId: business.stripeAccountId,
+                  chargesEnabled: business.chargesEnabled,
+                }}
+              />
             </CardContent>
           </Card>
         </TabsContent>
