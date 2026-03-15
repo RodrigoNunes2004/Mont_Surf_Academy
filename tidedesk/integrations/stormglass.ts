@@ -137,3 +137,47 @@ export async function fetchWeatherForecast(
     return [];
   }
 }
+
+/** Tide extreme (high or low) from Stormglass /tide/extremes/point */
+export type TideExtreme = {
+  height: number;
+  time: string;
+  type: "high" | "low";
+};
+
+type StormglassTideExtremesResponse = {
+  data?: TideExtreme[];
+};
+
+/**
+ * Fetch tide extremes (high/low) for the next 48 hours.
+ * Uses Stormglass /v2/tide/extremes/point.
+ */
+export async function fetchTideExtremes(
+  lat: number,
+  lng: number
+): Promise<TideExtreme[]> {
+  const apiKey = process.env.STORMGLASS_API_KEY;
+  if (!apiKey) {
+    console.warn("Stormglass: STORMGLASS_API_KEY not set");
+    return [];
+  }
+
+  const now = new Date();
+  const end = new Date(now.getTime() + 48 * 60 * 60 * 1000);
+
+  try {
+    const res = await fetchFromStormglass<StormglassTideExtremesResponse>(
+      "/tide/extremes/point",
+      lat,
+      lng,
+      apiKey,
+      now,
+      end
+    );
+    return res.data ?? [];
+  } catch (err) {
+    console.error("Stormglass tide extremes fetch error:", err);
+    return [];
+  }
+}

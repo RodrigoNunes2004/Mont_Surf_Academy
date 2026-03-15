@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Wind, Waves, Loader2 } from "lucide-react";
+import { TidePanel, type TideExtreme } from "./tide-panel";
 
 type ForecastPoint = {
   timestamp: string;
@@ -17,6 +18,8 @@ export function MarineForecastWidget({ compact = false }: { compact?: boolean })
   const [message, setMessage] = useState<string | null>(null);
 
   const [windguruSpotId, setWindguruSpotId] = useState<string | null>(null);
+  const [tides, setTides] = useState<TideExtreme[]>([]);
+  const [timezone, setTimezone] = useState<string>("Pacific/Auckland");
 
   useEffect(() => {
     fetch("/api/weather/forecast")
@@ -26,6 +29,8 @@ export function MarineForecastWidget({ compact = false }: { compact?: boolean })
         message?: string;
         error?: string;
         windguruSpotId?: string | null;
+        tides?: TideExtreme[];
+        timezone?: string;
       }) => {
         if (json.error) {
           setMessage(json.error);
@@ -37,6 +42,8 @@ export function MarineForecastWidget({ compact = false }: { compact?: boolean })
         }
         setData(json.data ?? []);
         setWindguruSpotId(json.windguruSpotId ?? null);
+        setTides(json.tides ?? []);
+        setTimezone(json.timezone ?? "Pacific/Auckland");
       })
       .catch(() => setMessage("Failed to load forecast"))
       .finally(() => setLoading(false));
@@ -147,6 +154,7 @@ export function MarineForecastWidget({ compact = false }: { compact?: boolean })
             </a>
           )}
         </div>
+        <TidePanel tides={tides} timezone={timezone} />
         {windguruSpotId && (
           <div className="mt-4">
             <p className="text-xs text-muted-foreground mb-2">WindGuru forecast</p>
