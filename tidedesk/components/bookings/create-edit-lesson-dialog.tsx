@@ -169,7 +169,7 @@ export function CreateEditLessonDialog({
             required
           />
         </div>
-          <div className="grid grid-cols-2 gap-4">
+        <div className="grid gap-4 sm:grid-cols-2">
           <div className="grid gap-2">
             <Label htmlFor="lesson-price">Price (per person) *</Label>
             <Input
@@ -196,7 +196,7 @@ export function CreateEditLessonDialog({
             />
           </div>
         </div>
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid gap-4 sm:grid-cols-2">
           <div className="grid gap-2">
             <Label htmlFor="lesson-duration">Duration (min) *</Label>
             <Input

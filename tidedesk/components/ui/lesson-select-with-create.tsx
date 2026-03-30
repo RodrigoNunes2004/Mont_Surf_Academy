@@ -216,7 +216,7 @@ export function LessonSelectWithCreate({
                 autoFocus
               />
             </div>
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid gap-2 sm:grid-cols-2">
               <div className="grid gap-1">
                 <Label className="text-xs">Price *</Label>
                 <Input

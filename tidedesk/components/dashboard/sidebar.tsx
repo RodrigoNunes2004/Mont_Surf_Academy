@@ -40,8 +40,8 @@ export function DashboardSidebar({ role }: { role: UserRole }) {
   const ctx = useDashboardContext();
 
   return (
-    <aside className="flex h-full w-full min-w-0 flex-col border-r border-slate-800 bg-slate-900 text-slate-200 md:w-64">
-      <div className="flex items-center justify-between gap-2 px-4 py-4 min-w-0">
+    <aside className="flex h-full min-h-0 w-full min-w-0 flex-col overflow-hidden border-r border-slate-800 bg-slate-900 text-slate-200 md:w-64">
+      <div className="flex min-w-0 shrink-0 items-center justify-between gap-2 px-4 py-4">
         <Link href="/dashboard" className="flex min-w-0 flex-1 items-center gap-2">
           <Image
             src="/TD_logo.png"
@@ -56,8 +56,8 @@ export function DashboardSidebar({ role }: { role: UserRole }) {
           Internal
         </Badge>
       </div>
-      <Separator className="bg-slate-700" />
-      <nav className="flex flex-1 flex-col gap-1 p-2">
+      <Separator className="shrink-0 bg-slate-700" />
+      <nav className="flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto overscroll-contain p-2">
         {fullNav
           .filter((item) => item.roles.includes(role))
           .filter((item) => !item.feature || hasFeature(ctx?.tier ?? "", item.feature))
@@ -85,8 +85,8 @@ export function DashboardSidebar({ role }: { role: UserRole }) {
           );
         })}
       </nav>
-      <Separator className="bg-slate-700" />
-      <div className="p-2 space-y-1">
+      <Separator className="shrink-0 bg-slate-700" />
+      <div className="shrink-0 space-y-1 p-2">
         <Link
           href="/account"
           onClick={() => ctx?.closeSidebar()}
