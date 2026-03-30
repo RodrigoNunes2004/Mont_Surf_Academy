@@ -1,9 +1,35 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { EquipmentStatus, RentalStatus } from "@prisma/client";
+import { EquipmentStatus, Prisma, RentalStatus } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
-import { resolveBusinessId, resolveSession, rejectIfInstructor } from "../../_lib/tenant";
+import { resolveSession, rejectIfInstructor } from "../../_lib/tenant";
 
 const RENTAL_STATUSES = Object.values(RentalStatus);
+
+function toSafeRental(rental: {
+  id: string;
+  customerId: string;
+  equipmentId: string | null;
+  equipmentVariantId: string | null;
+  quantity: number;
+  priceTotal?: Prisma.Decimal | number | string | null;
+  status: RentalStatus;
+  startAt: Date;
+  endAt: Date;
+  returnedAt?: Date | null;
+}) {
+  return {
+    id: rental.id,
+    customerId: rental.customerId,
+    equipmentId: rental.equipmentId,
+    equipmentVariantId: rental.equipmentVariantId,
+    quantity: rental.quantity,
+    priceTotal: rental.priceTotal != null ? Number(rental.priceTotal) : null,
+    status: rental.status,
+    startAt: rental.startAt,
+    endAt: rental.endAt,
+    returnedAt: rental.returnedAt ?? null,
+  };
+}
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -12,8 +38,8 @@ export async function GET(req: NextRequest, { params }: Params) {
   const { businessId, role } = await resolveSession(req);
   if (!businessId) {
     return NextResponse.json(
-      { error: "Missing tenant. Provide x-business-id header." },
-      { status: 400 },
+      { error: "Unauthorized" },
+      { status: 401 },
     );
   }
   const forbidden = rejectIfInstructor(role);
@@ -27,7 +53,7 @@ export async function GET(req: NextRequest, { params }: Params) {
     return NextResponse.json({ error: "Not found." }, { status: 404 });
   }
 
-  return NextResponse.json({ data: rental });
+  return NextResponse.json({ data: toSafeRental(rental) });
 }
 
 export async function PATCH(req: NextRequest, { params }: Params) {
@@ -35,8 +61,8 @@ export async function PATCH(req: NextRequest, { params }: Params) {
   const { businessId, role } = await resolveSession(req);
   if (!businessId) {
     return NextResponse.json(
-      { error: "Missing tenant. Provide x-business-id header." },
-      { status: 400 },
+      { error: "Unauthorized" },
+      { status: 401 },
     );
   }
   const forbidden = rejectIfInstructor(role);
@@ -139,7 +165,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
       return r;
     });
 
-    return NextResponse.json({ data: updated });
+    return NextResponse.json({ data: toSafeRental(updated) });
   }
 
   if (status === RentalStatus.CANCELLED) {
@@ -177,7 +203,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
       return r;
     });
 
-    return NextResponse.json({ data: updated });
+    return NextResponse.json({ data: toSafeRental(updated) });
   }
 
   if (status) {
@@ -196,7 +222,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     data,
   });
 
-  return NextResponse.json({ data: updated });
+  return NextResponse.json({ data: toSafeRental(updated) });
 }
 
 export async function DELETE(req: NextRequest, { params }: Params) {

@@ -1,15 +1,34 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
-import { resolveBusinessId, resolveSession, rejectIfInstructor } from "../_lib/tenant";
+import { resolveSession, rejectIfInstructor } from "../_lib/tenant";
 import { requireFeature } from "@/lib/tiers/require-feature";
 
+function toSafeLesson(lesson: {
+  id: string;
+  title: string;
+  price: Prisma.Decimal | number | string;
+  depositAmount?: Prisma.Decimal | number | string | null;
+  capacity: number | null;
+  durationMinutes: number;
+}) {
+  return {
+    id: lesson.id,
+    title: lesson.title,
+    price: Number(lesson.price),
+    depositAmount:
+      lesson.depositAmount != null ? Number(lesson.depositAmount) : null,
+    capacity: lesson.capacity,
+    durationMinutes: lesson.durationMinutes,
+  };
+}
+
 export async function GET(req: NextRequest) {
-  const businessId = await resolveBusinessId(req);
+  const { businessId } = await resolveSession(req);
   if (!businessId) {
     return NextResponse.json(
-      { error: "Missing tenant. Provide x-business-id header." },
-      { status: 400 },
+      { error: "Unauthorized" },
+      { status: 401 },
     );
   }
 
@@ -30,15 +49,15 @@ export async function GET(req: NextRequest) {
     skip,
   });
 
-  return NextResponse.json({ data: lessons });
+  return NextResponse.json({ data: lessons.map(toSafeLesson) });
 }
 
 export async function POST(req: NextRequest) {
   const { businessId, role } = await resolveSession(req);
   if (!businessId) {
     return NextResponse.json(
-      { error: "Missing tenant. Provide x-business-id header." },
-      { status: 400 },
+      { error: "Unauthorized" },
+      { status: 401 },
     );
   }
   const forbidden = rejectIfInstructor(role);
@@ -148,6 +167,6 @@ export async function POST(req: NextRequest) {
     } as Parameters<typeof prisma.lesson.create>[0]["data"],
   });
 
-  return NextResponse.json({ data: lesson }, { status: 201 });
+  return NextResponse.json({ data: toSafeLesson(lesson) }, { status: 201 });
 }
 

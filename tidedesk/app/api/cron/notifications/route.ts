@@ -1,5 +1,6 @@
 import { NextRequest } from "next/server";
 import { runNotificationJob } from "@/jobs/notificationJob";
+import { isAuthorizedCronRequest } from "@/lib/server/cron-auth";
 
 /**
  * Vercel Cron – sends booking reminders (24h before).
@@ -7,8 +8,7 @@ import { runNotificationJob } from "@/jobs/notificationJob";
  * Runs every hour; job filters to bookings starting in next 24h.
  */
 export async function GET(req: NextRequest) {
-  const authHeader = req.headers.get("authorization");
-  if (process.env.CRON_SECRET && authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+  if (!isAuthorizedCronRequest(req)) {
     return Response.json({ error: "Unauthorized" }, { status: 401 });
   }
 

@@ -1,18 +1,37 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
-import { resolveBusinessId, resolveSession, rejectIfInstructor } from "../../_lib/tenant";
+import { resolveSession, rejectIfInstructor } from "../../_lib/tenant";
 import { requireFeature } from "@/lib/tiers/require-feature";
+
+function toSafeLesson(lesson: {
+  id: string;
+  title: string;
+  price: Prisma.Decimal | number | string;
+  depositAmount?: Prisma.Decimal | number | string | null;
+  capacity: number | null;
+  durationMinutes: number;
+}) {
+  return {
+    id: lesson.id,
+    title: lesson.title,
+    price: Number(lesson.price),
+    depositAmount:
+      lesson.depositAmount != null ? Number(lesson.depositAmount) : null,
+    capacity: lesson.capacity,
+    durationMinutes: lesson.durationMinutes,
+  };
+}
 
 type Params = { params: Promise<{ id: string }> };
 
 export async function GET(req: NextRequest, { params }: Params) {
   const { id } = await params;
-  const businessId = await resolveBusinessId(req);
+  const { businessId } = await resolveSession(req);
   if (!businessId) {
     return NextResponse.json(
-      { error: "Missing tenant. Provide x-business-id header." },
-      { status: 400 },
+      { error: "Unauthorized" },
+      { status: 401 },
     );
   }
 
@@ -24,7 +43,7 @@ export async function GET(req: NextRequest, { params }: Params) {
     return NextResponse.json({ error: "Not found." }, { status: 404 });
   }
 
-  return NextResponse.json({ data: lesson });
+  return NextResponse.json({ data: toSafeLesson(lesson) });
 }
 
 export async function PATCH(req: NextRequest, { params }: Params) {
@@ -32,8 +51,8 @@ export async function PATCH(req: NextRequest, { params }: Params) {
   const { businessId, role } = await resolveSession(req);
   if (!businessId) {
     return NextResponse.json(
-      { error: "Missing tenant. Provide x-business-id header." },
-      { status: 400 },
+      { error: "Unauthorized" },
+      { status: 401 },
     );
   }
   const forbidden = rejectIfInstructor(role);
@@ -145,7 +164,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     data,
   });
 
-  return NextResponse.json({ data: updated });
+  return NextResponse.json({ data: toSafeLesson(updated) });
 }
 
 export async function DELETE(req: NextRequest, { params }: Params) {
@@ -153,8 +172,8 @@ export async function DELETE(req: NextRequest, { params }: Params) {
   const { businessId, role } = await resolveSession(req);
   if (!businessId) {
     return NextResponse.json(
-      { error: "Missing tenant. Provide x-business-id header." },
-      { status: 400 },
+      { error: "Unauthorized" },
+      { status: 401 },
     );
   }
   const forbidden = rejectIfInstructor(role);

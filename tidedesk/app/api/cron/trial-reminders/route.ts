@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { notificationService } from "@/services/notificationService";
+import { isAuthorizedCronRequest } from "@/lib/server/cron-auth";
 
 /**
  * Vercel Cron – sends trial-ending reminders to business owners.
@@ -8,8 +9,7 @@ import { notificationService } from "@/services/notificationService";
  * Sends to businesses whose trial ends in the next 3 days, at most once per business per 4 days.
  */
 export async function GET(req: NextRequest) {
-  const authHeader = req.headers.get("authorization");
-  if (process.env.CRON_SECRET && authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+  if (!isAuthorizedCronRequest(req)) {
     return Response.json({ error: "Unauthorized" }, { status: 401 });
   }
 

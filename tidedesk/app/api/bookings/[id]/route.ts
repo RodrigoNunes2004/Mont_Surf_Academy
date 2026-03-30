@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import type { BookingStatus } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
-import { resolveBusinessId } from "../../_lib/tenant";
+import { resolveSession } from "../../_lib/tenant";
 import { validateLessonEndTime } from "@/lib/lesson-hours";
 
 const BOOKING_STATUSES = ["BOOKED", "CHECKED_IN", "COMPLETED", "CANCELLED", "NO_SHOW"] as const;
@@ -10,11 +10,11 @@ type Params = { params: Promise<{ id: string }> };
 
 export async function GET(req: NextRequest, { params }: Params) {
   const { id } = await params;
-  const businessId = await resolveBusinessId(req);
+  const { businessId } = await resolveSession(req);
   if (!businessId) {
     return NextResponse.json(
-      { error: "Missing tenant. Provide x-business-id header." },
-      { status: 400 },
+      { error: "Unauthorized" },
+      { status: 401 },
     );
   }
 
@@ -31,11 +31,11 @@ export async function GET(req: NextRequest, { params }: Params) {
 
 export async function PATCH(req: NextRequest, { params }: Params) {
   const { id } = await params;
-  const businessId = await resolveBusinessId(req);
+  const { businessId, role } = await resolveSession(req);
   if (!businessId) {
     return NextResponse.json(
-      { error: "Missing tenant. Provide x-business-id header." },
-      { status: 400 },
+      { error: "Unauthorized" },
+      { status: 401 },
     );
   }
 
@@ -51,6 +51,16 @@ export async function PATCH(req: NextRequest, { params }: Params) {
   }
 
   const b = body as Record<string, unknown>;
+  if (role === "INSTRUCTOR") {
+    const keys = Object.keys(b);
+    const nextStatus = typeof b.status === "string" ? b.status.trim() : "";
+    if (keys.length !== 1 || nextStatus !== "CHECKED_IN") {
+      return NextResponse.json(
+        { error: "Forbidden: instructors can only check in bookings." },
+        { status: 403 }
+      );
+    }
+  }
   const data: Record<string, unknown> = {};
 
   const current = await prisma.booking.findFirst({

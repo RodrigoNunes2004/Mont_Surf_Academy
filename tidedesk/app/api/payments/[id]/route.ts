@@ -1,21 +1,49 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { PaymentMethod, Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
-import { resolveBusinessId } from "../../_lib/tenant";
+import { resolveSession, rejectIfInstructor } from "../../_lib/tenant";
 
 const PAYMENT_METHODS = Object.values(PaymentMethod);
+
+function toSafePayment(payment: {
+  id: string;
+  bookingId: string | null;
+  rentalId: string | null;
+  amount: Prisma.Decimal;
+  currency: string;
+  method: PaymentMethod;
+  provider: string;
+  status: string;
+  paidAt: Date;
+  createdAt: Date;
+}) {
+  return {
+    id: payment.id,
+    bookingId: payment.bookingId,
+    rentalId: payment.rentalId,
+    amount: Number(payment.amount),
+    currency: payment.currency,
+    method: payment.method,
+    provider: payment.provider,
+    status: payment.status,
+    paidAt: payment.paidAt,
+    createdAt: payment.createdAt,
+  };
+}
 
 type Params = { params: Promise<{ id: string }> };
 
 export async function GET(req: NextRequest, { params }: Params) {
   const { id } = await params;
-  const businessId = await resolveBusinessId(req);
+  const { businessId, role } = await resolveSession(req);
   if (!businessId) {
     return NextResponse.json(
-      { error: "Missing tenant. Provide x-business-id header." },
-      { status: 400 },
+      { error: "Unauthorized" },
+      { status: 401 },
     );
   }
+  const forbidden = rejectIfInstructor(role);
+  if (forbidden) return forbidden;
 
   const payment = await prisma.payment.findFirst({
     where: { id, businessId },
@@ -25,18 +53,20 @@ export async function GET(req: NextRequest, { params }: Params) {
     return NextResponse.json({ error: "Not found." }, { status: 404 });
   }
 
-  return NextResponse.json({ data: payment });
+  return NextResponse.json({ data: toSafePayment(payment) });
 }
 
 export async function PATCH(req: NextRequest, { params }: Params) {
   const { id } = await params;
-  const businessId = await resolveBusinessId(req);
+  const { businessId, role } = await resolveSession(req);
   if (!businessId) {
     return NextResponse.json(
-      { error: "Missing tenant. Provide x-business-id header." },
-      { status: 400 },
+      { error: "Unauthorized" },
+      { status: 401 },
     );
   }
+  const forbidden = rejectIfInstructor(role);
+  if (forbidden) return forbidden;
 
   let body: unknown;
   try {
@@ -149,18 +179,20 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     data,
   });
 
-  return NextResponse.json({ data: updated });
+  return NextResponse.json({ data: toSafePayment(updated) });
 }
 
 export async function DELETE(req: NextRequest, { params }: Params) {
   const { id } = await params;
-  const businessId = await resolveBusinessId(req);
+  const { businessId, role } = await resolveSession(req);
   if (!businessId) {
     return NextResponse.json(
-      { error: "Missing tenant. Provide x-business-id header." },
-      { status: 400 },
+      { error: "Unauthorized" },
+      { status: 401 },
     );
   }
+  const forbidden = rejectIfInstructor(role);
+  if (forbidden) return forbidden;
 
   const exists = await prisma.payment.findFirst({ where: { id, businessId } });
   if (!exists) {

@@ -4,14 +4,14 @@ import {
   getUniqueWeatherLocations,
 } from "@/lib/weather/refreshWeatherCache";
 import { runWeatherJob } from "@/jobs/weatherJob";
+import { isAuthorizedCronRequest } from "@/lib/server/cron-auth";
 
 /**
  * Vercel Cron – refreshes WeatherCache (Stormglass), then sends WEATHER_ALERT when warranted.
  * Runs hourly. Users never trigger Stormglass; all pages read cached data.
  */
 export async function GET(req: NextRequest) {
-  const authHeader = req.headers.get("authorization");
-  if (process.env.CRON_SECRET && authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+  if (!isAuthorizedCronRequest(req)) {
     return Response.json({ error: "Unauthorized" }, { status: 401 });
   }
 

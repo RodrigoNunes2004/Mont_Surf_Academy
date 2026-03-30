@@ -7,12 +7,38 @@ import { resolveSession, rejectIfInstructor } from "../_lib/tenant";
 const RENTAL_STATUSES = Object.values(RentalStatus);
 const PAYMENT_METHODS = Object.values(PaymentMethod);
 
+function toSafeRental(rental: {
+  id: string;
+  customerId: string;
+  equipmentId: string | null;
+  equipmentVariantId: string | null;
+  quantity: number;
+  priceTotal?: Prisma.Decimal | number | string | null;
+  status: RentalStatus;
+  startAt: Date;
+  endAt: Date;
+  returnedAt?: Date | null;
+}) {
+  return {
+    id: rental.id,
+    customerId: rental.customerId,
+    equipmentId: rental.equipmentId,
+    equipmentVariantId: rental.equipmentVariantId,
+    quantity: rental.quantity,
+    priceTotal: rental.priceTotal != null ? Number(rental.priceTotal) : null,
+    status: rental.status,
+    startAt: rental.startAt,
+    endAt: rental.endAt,
+    returnedAt: rental.returnedAt ?? null,
+  };
+}
+
 export async function GET(req: NextRequest) {
   const { businessId, role } = await resolveSession(req);
   if (!businessId) {
     return NextResponse.json(
-      { error: "Missing tenant. Provide x-business-id header." },
-      { status: 400 },
+      { error: "Unauthorized" },
+      { status: 401 },
     );
   }
   const forbidden = rejectIfInstructor(role);
@@ -51,15 +77,15 @@ export async function GET(req: NextRequest) {
     skip,
   });
 
-  return NextResponse.json({ data: rentals });
+  return NextResponse.json({ data: rentals.map(toSafeRental) });
 }
 
 export async function POST(req: NextRequest) {
   const { businessId, role } = await resolveSession(req);
   if (!businessId) {
     return NextResponse.json(
-      { error: "Missing tenant. Provide x-business-id header." },
-      { status: 400 },
+      { error: "Unauthorized" },
+      { status: 401 },
     );
   }
   const forbidden = rejectIfInstructor(role);
@@ -249,7 +275,7 @@ export async function POST(req: NextRequest) {
         return created;
       });
 
-      return NextResponse.json({ data: rental }, { status: 201 });
+      return NextResponse.json({ data: toSafeRental(rental) }, { status: 201 });
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
       if (msg === "variant_not_found") {
@@ -315,6 +341,6 @@ export async function POST(req: NextRequest) {
     throw e;
   }
 
-  return NextResponse.json({ data: rental }, { status: 201 });
+  return NextResponse.json({ data: toSafeRental(rental) }, { status: 201 });
 }
 

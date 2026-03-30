@@ -19,12 +19,6 @@ type ConfirmationData = {
     status: string;
   };
   lesson: { title: string; price: number; durationMinutes: number } | null;
-  customer: {
-    firstName: string;
-    lastName: string;
-    email: string | null;
-    phone: string | null;
-  };
   paid: boolean;
 };
 
@@ -92,7 +86,7 @@ export function ConfirmationContent({
                 {data.lesson?.title ?? "Lesson"}
               </h2>
               <p className="text-sm text-muted-foreground">
-                {data.customer.firstName} {data.customer.lastName}
+                Your booking has been confirmed.
               </p>
             </div>
             <dl className="grid gap-2 text-sm">
@@ -139,11 +133,9 @@ export function ConfirmationContent({
                 </div>
               )}
             </dl>
-            {data.customer.email && (
-              <p className="text-xs text-muted-foreground">
-                A confirmation has been sent to {data.customer.email}
-              </p>
-            )}
+            <p className="text-xs text-muted-foreground">
+              We&apos;ve recorded your booking details and payment status.
+            </p>
           </div>
         </div>
       </CardContent>

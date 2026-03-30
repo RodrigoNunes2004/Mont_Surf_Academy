@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { BookingStatus, PaymentMethod } from "@prisma/client";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
-import { resolveBusinessId } from "../_lib/tenant";
+import { resolveSession, rejectIfInstructor } from "../_lib/tenant";
 import { validateLessonEndTime } from "@/lib/lesson-hours";
 import { dispatchWebhook, buildBookingPayload } from "@/lib/webhooks/dispatch";
 
@@ -11,11 +11,11 @@ const ACTIVE_LESSON_BOOKING_STATUSES = ["BOOKED", "CHECKED_IN"] as BookingStatus
 const PAYMENT_METHODS = Object.values(PaymentMethod);
 
 export async function GET(req: NextRequest) {
-  const businessId = await resolveBusinessId(req);
+  const { businessId } = await resolveSession(req);
   if (!businessId) {
     return NextResponse.json(
-      { error: "Missing tenant. Provide x-business-id header." },
-      { status: 400 },
+      { error: "Unauthorized" },
+      { status: 401 },
     );
   }
 
@@ -52,13 +52,15 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  const businessId = await resolveBusinessId(req);
+  const { businessId, role } = await resolveSession(req);
   if (!businessId) {
     return NextResponse.json(
-      { error: "Missing tenant. Provide x-business-id header." },
-      { status: 400 },
+      { error: "Unauthorized" },
+      { status: 401 },
     );
   }
+  const forbidden = rejectIfInstructor(role);
+  if (forbidden) return forbidden;
 
   let body: unknown;
   try {

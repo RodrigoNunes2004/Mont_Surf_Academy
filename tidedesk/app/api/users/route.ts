@@ -1,15 +1,17 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { resolveBusinessId } from "../_lib/tenant";
+import { resolveSession, rejectIfInstructor } from "../_lib/tenant";
 
 export async function GET(req: NextRequest) {
-  const businessId = await resolveBusinessId(req);
+  const { businessId, role } = await resolveSession(req);
   if (!businessId) {
     return NextResponse.json(
-      { error: "Missing tenant. Provide x-business-id header." },
-      { status: 400 },
+      { error: "Unauthorized" },
+      { status: 401 },
     );
   }
+  const forbidden = rejectIfInstructor(role);
+  if (forbidden) return forbidden;
 
   const { searchParams } = new URL(req.url);
   const takeRaw = searchParams.get("take");
@@ -24,7 +26,6 @@ export async function GET(req: NextRequest) {
     skip,
     select: {
       id: true,
-      businessId: true,
       name: true,
       email: true,
       role: true,

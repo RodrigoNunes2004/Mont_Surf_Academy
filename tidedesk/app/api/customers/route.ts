@@ -1,15 +1,35 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { resolveBusinessId, resolveSession, rejectIfInstructor } from "../_lib/tenant";
+import { resolveSession, rejectIfInstructor } from "../_lib/tenant";
+
+function toSafeCustomer(customer: {
+  id: string;
+  firstName: string;
+  lastName: string;
+  phone: string | null;
+  email: string | null;
+  archivedAt?: Date | null;
+}) {
+  return {
+    id: customer.id,
+    firstName: customer.firstName,
+    lastName: customer.lastName,
+    phone: customer.phone,
+    email: customer.email,
+    archived: !!customer.archivedAt,
+  };
+}
 
 export async function GET(req: NextRequest) {
-  const businessId = await resolveBusinessId(req);
+  const { businessId, role } = await resolveSession(req);
   if (!businessId) {
     return NextResponse.json(
-      { error: "Missing tenant. Provide x-business-id header." },
-      { status: 400 },
+      { error: "Unauthorized" },
+      { status: 401 },
     );
   }
+  const forbidden = rejectIfInstructor(role);
+  if (forbidden) return forbidden;
 
   const { searchParams } = new URL(req.url);
   const q = searchParams.get("q")?.trim();
@@ -62,7 +82,7 @@ export async function GET(req: NextRequest) {
   ]);
 
   return NextResponse.json({
-    data: customers,
+    data: customers.map(toSafeCustomer),
     meta: { total, take, skip, status, sort, q: q ?? "" },
   });
 }
@@ -71,8 +91,8 @@ export async function POST(req: NextRequest) {
   const { businessId, role } = await resolveSession(req);
   if (!businessId) {
     return NextResponse.json(
-      { error: "Missing tenant. Provide x-business-id header." },
-      { status: 400 },
+      { error: "Unauthorized" },
+      { status: 401 },
     );
   }
   const forbidden = rejectIfInstructor(role);
@@ -126,6 +146,6 @@ export async function POST(req: NextRequest) {
     },
   });
 
-  return NextResponse.json({ data: customer }, { status: 201 });
+  return NextResponse.json({ data: toSafeCustomer(customer) }, { status: 201 });
 }
 

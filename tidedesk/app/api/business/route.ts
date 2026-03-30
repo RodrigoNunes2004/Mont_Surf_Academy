@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { PaymentMethod } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
-import { resolveBusinessId } from "../_lib/tenant";
+import { resolveSession, rejectIfInstructor } from "../_lib/tenant";
 
 const ALLOWED_KEYS = [
   "name",
@@ -24,14 +24,48 @@ const ALLOWED_KEYS = [
 
 const VALID_PAYMENT_METHODS = Object.values(PaymentMethod);
 
+function toSafeBusinessResponse(
+  business: Awaited<ReturnType<typeof prisma.business.findUnique>>
+) {
+  if (!business) return null;
+
+  return {
+    id: business.id,
+    name: business.name,
+    slug: business.slug,
+    location: business.location,
+    contactEmail: business.contactEmail,
+    phone: business.phone,
+    address: business.address,
+    timezone: business.timezone,
+    currency: business.currency,
+    logoUrl: business.logoUrl,
+    latitude: business.latitude != null ? Number(business.latitude) : null,
+    longitude: business.longitude != null ? Number(business.longitude) : null,
+    windguruSpotId: business.windguruSpotId,
+    defaultPaymentMethod: business.defaultPaymentMethod,
+    onlineBookingEnabled: business.onlineBookingEnabled,
+    onlineBookingMessage: business.onlineBookingMessage,
+    businessHoursOpen: business.businessHoursOpen,
+    businessHoursClose: business.businessHoursClose,
+    stripeConnected: !!business.stripeAccountId,
+    chargesEnabled: business.chargesEnabled,
+    payoutsEnabled: business.payoutsEnabled,
+    detailsSubmitted: business.detailsSubmitted,
+    updatedAt: business.updatedAt,
+  };
+}
+
 export async function GET(req: NextRequest) {
-  const businessId = await resolveBusinessId(req);
+  const { businessId, role } = await resolveSession(req);
   if (!businessId) {
     return NextResponse.json(
-      { error: "Missing tenant. Provide x-business-id header." },
-      { status: 400 },
+      { error: "Unauthorized" },
+      { status: 401 },
     );
   }
+  const forbidden = rejectIfInstructor(role);
+  if (forbidden) return forbidden;
 
   const business = await prisma.business.findUnique({
     where: { id: businessId },
@@ -41,17 +75,19 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Not found." }, { status: 404 });
   }
 
-  return NextResponse.json({ data: business });
+  return NextResponse.json({ data: toSafeBusinessResponse(business) });
 }
 
 export async function PATCH(req: NextRequest) {
-  const businessId = await resolveBusinessId(req);
+  const { businessId, role } = await resolveSession(req);
   if (!businessId) {
     return NextResponse.json(
-      { error: "Missing tenant. Provide x-business-id header." },
-      { status: 400 },
+      { error: "Unauthorized" },
+      { status: 401 },
     );
   }
+  const forbidden = rejectIfInstructor(role);
+  if (forbidden) return forbidden;
 
   let body: Record<string, unknown>;
   try {
@@ -145,12 +181,11 @@ export async function PATCH(req: NextRequest) {
       where: { id: businessId },
       data: data as Parameters<typeof prisma.business.update>[0]["data"],
     });
-    return NextResponse.json({ data: business });
+    return NextResponse.json({ data: toSafeBusinessResponse(business) });
   } catch (err) {
-    const msg = err instanceof Error ? err.message : String(err);
     console.error("[PATCH /api/business] Prisma error:", err);
     return NextResponse.json(
-      { error: "Failed to update business.", details: msg },
+      { error: "Failed to update business." },
       { status: 500 },
     );
   }

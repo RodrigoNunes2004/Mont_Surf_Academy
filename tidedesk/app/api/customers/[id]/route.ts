@@ -1,18 +1,38 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { resolveBusinessId, resolveSession, rejectIfInstructor } from "../../_lib/tenant";
+import { resolveSession, rejectIfInstructor } from "../../_lib/tenant";
+
+function toSafeCustomer(customer: {
+  id: string;
+  firstName: string;
+  lastName: string;
+  phone: string | null;
+  email: string | null;
+  archivedAt?: Date | null;
+}) {
+  return {
+    id: customer.id,
+    firstName: customer.firstName,
+    lastName: customer.lastName,
+    phone: customer.phone,
+    email: customer.email,
+    archived: !!customer.archivedAt,
+  };
+}
 
 type Params = { params: Promise<{ id: string }> };
 
 export async function GET(req: NextRequest, { params }: Params) {
   const { id } = await params;
-  const businessId = await resolveBusinessId(req);
+  const { businessId, role } = await resolveSession(req);
   if (!businessId) {
     return NextResponse.json(
-      { error: "Missing tenant. Provide x-business-id header." },
-      { status: 400 },
+      { error: "Unauthorized" },
+      { status: 401 },
     );
   }
+  const forbidden = rejectIfInstructor(role);
+  if (forbidden) return forbidden;
 
   const customer = await prisma.customer.findFirst({
     where: { id, businessId },
@@ -22,7 +42,7 @@ export async function GET(req: NextRequest, { params }: Params) {
     return NextResponse.json({ error: "Not found." }, { status: 404 });
   }
 
-  return NextResponse.json({ data: customer });
+  return NextResponse.json({ data: toSafeCustomer(customer) });
 }
 
 export async function PATCH(req: NextRequest, { params }: Params) {
@@ -30,8 +50,8 @@ export async function PATCH(req: NextRequest, { params }: Params) {
   const { businessId, role } = await resolveSession(req);
   if (!businessId) {
     return NextResponse.json(
-      { error: "Missing tenant. Provide x-business-id header." },
-      { status: 400 },
+      { error: "Unauthorized" },
+      { status: 401 },
     );
   }
   const forbidden = rejectIfInstructor(role);
@@ -86,7 +106,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     data,
   });
 
-  return NextResponse.json({ data: updated });
+  return NextResponse.json({ data: toSafeCustomer(updated) });
 }
 
 export async function DELETE(req: NextRequest, { params }: Params) {
@@ -94,8 +114,8 @@ export async function DELETE(req: NextRequest, { params }: Params) {
   const { businessId, role } = await resolveSession(req);
   if (!businessId) {
     return NextResponse.json(
-      { error: "Missing tenant. Provide x-business-id header." },
-      { status: 400 },
+      { error: "Unauthorized" },
+      { status: 401 },
     );
   }
   const forbidden = rejectIfInstructor(role);

@@ -1,18 +1,46 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { PaymentMethod, Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
-import { resolveBusinessId, resolveSession, rejectIfInstructor } from "../_lib/tenant";
+import { resolveSession, rejectIfInstructor } from "../_lib/tenant";
 
 const PAYMENT_METHODS = Object.values(PaymentMethod);
 
+function toSafePayment(payment: {
+  id: string;
+  bookingId: string | null;
+  rentalId: string | null;
+  amount: Prisma.Decimal;
+  currency: string;
+  method: PaymentMethod;
+  provider: string;
+  status: string;
+  paidAt: Date;
+  createdAt: Date;
+}) {
+  return {
+    id: payment.id,
+    bookingId: payment.bookingId,
+    rentalId: payment.rentalId,
+    amount: Number(payment.amount),
+    currency: payment.currency,
+    method: payment.method,
+    provider: payment.provider,
+    status: payment.status,
+    paidAt: payment.paidAt,
+    createdAt: payment.createdAt,
+  };
+}
+
 export async function GET(req: NextRequest) {
-  const businessId = await resolveBusinessId(req);
+  const { businessId, role } = await resolveSession(req);
   if (!businessId) {
     return NextResponse.json(
-      { error: "Missing tenant. Provide x-business-id header." },
-      { status: 400 },
+      { error: "Unauthorized" },
+      { status: 401 },
     );
   }
+  const forbidden = rejectIfInstructor(role);
+  if (forbidden) return forbidden;
 
   const { searchParams } = new URL(req.url);
   const takeRaw = searchParams.get("take");
@@ -43,7 +71,7 @@ export async function GET(req: NextRequest) {
     skip,
   });
 
-  return NextResponse.json({ data: payments });
+  return NextResponse.json({ data: payments.map(toSafePayment) });
 }
 
 export async function POST(req: NextRequest) {
@@ -147,6 +175,6 @@ export async function POST(req: NextRequest) {
     },
   });
 
-  return NextResponse.json({ data: payment }, { status: 201 });
+  return NextResponse.json({ data: toSafePayment(payment) }, { status: 201 });
 }
 

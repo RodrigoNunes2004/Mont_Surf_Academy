@@ -77,7 +77,6 @@ export async function GET(
     where: { id: resolvedBookingId, businessId: business.id },
     include: {
       lesson: { select: { title: true, price: true, durationMinutes: true } },
-      customer: { select: { firstName: true, lastName: true, email: true, phone: true } },
     },
   });
 
@@ -143,12 +142,6 @@ export async function GET(
           durationMinutes: booking.lesson.durationMinutes,
         }
       : null,
-    customer: {
-      firstName: booking.customer.firstName,
-      lastName: booking.customer.lastName,
-      email: booking.customer.email,
-      phone: booking.customer.phone,
-    },
     paid: !!paidPayment,
   });
 }

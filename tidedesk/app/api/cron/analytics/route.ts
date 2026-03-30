@@ -1,13 +1,13 @@
 import { NextRequest } from "next/server";
 import { runAnalyticsJob } from "@/jobs/analyticsJob";
+import { isAuthorizedCronRequest } from "@/lib/server/cron-auth";
 
 /**
  * Vercel Cron – computes daily analytics for all businesses.
  * Runs at 02:00 UTC daily.
  */
 export async function GET(req: NextRequest) {
-  const authHeader = req.headers.get("authorization");
-  if (process.env.CRON_SECRET && authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+  if (!isAuthorizedCronRequest(req)) {
     return Response.json({ error: "Unauthorized" }, { status: 401 });
   }
 

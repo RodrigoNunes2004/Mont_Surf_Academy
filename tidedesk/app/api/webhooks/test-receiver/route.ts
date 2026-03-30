@@ -10,6 +10,10 @@ import { NextRequest } from "next/server";
  * 3. Watch your Next.js terminal — you'll see the payload logged
  */
 export async function POST(req: NextRequest) {
+  if (process.env.NODE_ENV === "production") {
+    return new Response("Not found", { status: 404 });
+  }
+
   const body = await req.text();
   const signature = req.headers.get("x-tidedesk-signature");
   const event = req.headers.get("x-tidedesk-event");

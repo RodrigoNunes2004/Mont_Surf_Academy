@@ -1,19 +1,21 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { IntegrationProvider } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
-import { resolveBusinessId } from "../_lib/tenant";
+import { resolveSession, rejectIfInstructor } from "../_lib/tenant";
 import { encrypt } from "@/lib/encrypt";
 
 const PROVIDERS = Object.values(IntegrationProvider);
 
 export async function GET(req: NextRequest) {
-  const businessId = await resolveBusinessId(req);
+  const { businessId, role } = await resolveSession(req);
   if (!businessId) {
     return NextResponse.json(
-      { error: "Missing tenant. Provide x-business-id header." },
-      { status: 400 },
+      { error: "Unauthorized" },
+      { status: 401 },
     );
   }
+  const forbidden = rejectIfInstructor(role);
+  if (forbidden) return forbidden;
 
   const integrations = await prisma.integration.findMany({
     where: { businessId },
@@ -40,13 +42,15 @@ type ConfigPayload = {
 };
 
 export async function PUT(req: NextRequest) {
-  const businessId = await resolveBusinessId(req);
+  const { businessId, role } = await resolveSession(req);
   if (!businessId) {
     return NextResponse.json(
-      { error: "Missing tenant. Provide x-business-id header." },
-      { status: 400 },
+      { error: "Unauthorized" },
+      { status: 401 },
     );
   }
+  const forbidden = rejectIfInstructor(role);
+  if (forbidden) return forbidden;
 
   let body: { provider?: string; apiKey?: string; webhookSecret?: string; isActive?: boolean };
   try {

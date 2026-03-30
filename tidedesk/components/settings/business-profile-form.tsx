@@ -97,10 +97,9 @@ export function BusinessProfileForm({ business }: { business: Business }) {
           windguruSpotId: form.windguruSpotId.trim() || null,
         }),
       });
-      const data = (await res.json().catch(() => null)) as { error?: string; details?: string } | null;
+      const data = (await res.json().catch(() => null)) as { error?: string } | null;
       if (!res.ok) {
-        const msg = data?.details ? `${data.error} ${data.details}` : (data?.error ?? "Failed to save.");
-        setError(msg);
+        setError(data?.error ?? "Failed to save.");
         return;
       }
       router.refresh();
