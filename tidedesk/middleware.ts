@@ -46,7 +46,7 @@ function buildCsp(options?: { allowEmbedding?: boolean }) {
     "default-src 'self'",
     `script-src ${scriptSrc.join(" ")}`,
     "style-src 'self' 'unsafe-inline'",
-    "img-src 'self' data: blob: https:",
+    "img-src 'self' data: blob: http: https:",
     "font-src 'self' data: https://fonts.gstatic.com",
     "connect-src 'self' https://api.stripe.com https://r.stripe.com https://m.stripe.network https://api.stormglass.io",
     "frame-src 'self' https://www.windguru.cz https://js.stripe.com https://hooks.stripe.com https://checkout.stripe.com",
