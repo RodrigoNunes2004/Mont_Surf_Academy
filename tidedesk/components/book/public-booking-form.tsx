@@ -35,6 +35,8 @@ type SchoolData = {
     slug: string;
     timezone: string;
     currency: string;
+    logoUrl?: string | null;
+    whiteLabelEnabled?: boolean;
     canAcceptPayments: boolean;
     hasDeposits?: boolean;
     onlineBookingEnabled?: boolean;

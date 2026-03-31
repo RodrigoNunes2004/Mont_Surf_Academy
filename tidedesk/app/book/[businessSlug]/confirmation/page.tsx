@@ -3,6 +3,8 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { prisma } from "@/lib/prisma";
+import { getBusinessTier } from "@/lib/tiers/get-business-tier";
+import { hasFeature } from "@/lib/tiers";
 import { ConfirmationContent } from "@/components/book";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -22,27 +24,41 @@ export default async function ConfirmationPage({ params, searchParams }: Props) 
 
   const business = await prisma.business.findUnique({
     where: { slug: businessSlug.trim() },
-    select: { id: true, name: true, slug: true },
+    select: { id: true, name: true, slug: true, logoUrl: true },
   });
 
   if (!business) notFound();
+  const whiteLabelEnabled = hasFeature(
+    await getBusinessTier(business.id),
+    "white-label"
+  );
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white dark:from-slate-950 dark:to-slate-900">
+    <div className="min-h-screen bg-linear-to-b from-slate-50 to-white dark:from-slate-950 dark:to-slate-900">
       <header className="border-b border-slate-200/80 dark:border-slate-800">
         <div className="mx-auto flex max-w-2xl items-center justify-between px-4 py-4">
-          <Link href="/" className="flex items-center gap-2">
-            <Image
-              src="/TD_logo.png"
-              alt="TideDesk"
-              width={100}
-              height={32}
-              className="h-8 w-auto object-contain"
-            />
-          </Link>
-          <span className="font-semibold text-slate-800 dark:text-slate-200">
-            {business.name}
-          </span>
+          <div className="flex min-w-0 items-center gap-3">
+            {!whiteLabelEnabled ? (
+              <Link href="/" className="flex items-center gap-2">
+                <Image
+                  src="/TD_logo.png"
+                  alt="TideDesk"
+                  width={100}
+                  height={32}
+                  className="h-8 w-auto object-contain"
+                />
+              </Link>
+            ) : business.logoUrl ? (
+              <img
+                src={business.logoUrl}
+                alt={`${business.name} logo`}
+                className="h-10 w-auto max-w-[140px] shrink-0 object-contain"
+              />
+            ) : null}
+            <span className="truncate font-semibold text-slate-800 dark:text-slate-200">
+              {business.name}
+            </span>
+          </div>
         </div>
       </header>
 

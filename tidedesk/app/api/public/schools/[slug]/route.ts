@@ -47,6 +47,7 @@ export async function GET(
 
   const tier = await getBusinessTier(business.id);
   const hasDeposits = hasFeature(tier, "deposits");
+  const whiteLabelEnabled = hasFeature(tier, "white-label");
 
   const allVariants = await prisma.equipmentVariant.findMany({
     where: {
@@ -84,6 +85,7 @@ export async function GET(
       timezone: business.timezone ?? "Pacific/Auckland",
       currency: business.currency ?? "NZD",
       logoUrl: business.logoUrl,
+      whiteLabelEnabled,
       canAcceptPayments: Boolean(
         business.stripeAccountId && business.chargesEnabled && business.payoutsEnabled
       ),

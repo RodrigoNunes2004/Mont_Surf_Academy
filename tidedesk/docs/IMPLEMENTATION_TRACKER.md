@@ -55,7 +55,7 @@ Track what's done vs planned for each plan tier. Aligns with the three pricing c
 | 4 | Advanced analytics | ✅ | Medium | M | /analytics: revenue, bookings, students, instructors, equipment, alerts |
 | 5 | POS beach mode | ✅ | High | M | Tablet UI for quick rental, check-in, return |
 | 6 | API access | ✅ | High | L | REST API, webhooks; unlocks ecosystem integrations |
-| 7 | White label | 🔲 | Low | M | Custom domain, remove TideDesk branding |
+| 7 | White label | 🔶 | Low | M | Premium public booking + confirmation pages use school branding/logo; custom domain still planned |
 | 8 | Integrations (FareHarbor) | 🔲 | Low | L | External booking sync |
 
 **Premium:** 5/8 done, 2 planned · **Maturity: ~63%**
@@ -72,7 +72,7 @@ Based on impact vs difficulty.
 | ~~12~~ | ~~POS beach mode~~ | ✅ Done | High | M | `/beach`: today bookings check-in, active rentals return, quick rental |
 | ~~13~~ | ~~Advanced analytics~~ | ✅ Done | — | — | Revenue by day/lesson, bookings, students, instructors, equipment, alerts |
 | ~~14~~ | ~~WindGuru integration~~ | ✅ Done | — | — | Marine forecast widget on Dashboard, Bookings, Beach; Stormglass data |
-| **15** | White label | — | Low | M | Custom domain, branding; high perceived value |
+| **15** | White label | 🔶 Partial | Low | M | Public booking branding delivered; custom domain still pending |
 | **16** | FareHarbor integration | — | Low | L | External booking imports; more bookings for schools |
 
 ---

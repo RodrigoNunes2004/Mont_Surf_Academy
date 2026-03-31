@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -36,8 +37,11 @@ type FieldErrors = Partial<Record<string, string>>;
 
 export function BusinessProfileForm({ business }: { business: Business }) {
   const router = useRouter();
+  const logoInputRef = useRef<HTMLInputElement>(null);
   const [loading, setLoading] = useState(false);
+  const [logoUploading, setLogoUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [logoError, setLogoError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [form, setForm] = useState({
     name: business.name ?? "",
@@ -47,6 +51,7 @@ export function BusinessProfileForm({ business }: { business: Business }) {
     address: business.address ?? "",
     timezone: business.timezone ?? "Pacific/Auckland",
     currency: business.currency ?? "NZD",
+    logoUrl: business.logoUrl ?? "",
     latitude: business.latitude != null ? String(business.latitude) : "",
     longitude: business.longitude != null ? String(business.longitude) : "",
     windguruSpotId: business.windguruSpotId ?? "",
@@ -74,6 +79,42 @@ export function BusinessProfileForm({ business }: { business: Business }) {
     return Object.keys(err).length === 0;
   }
 
+  async function handleLogoUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setLogoError(null);
+    setLogoUploading(true);
+
+    try {
+      const formData = new FormData();
+      formData.append("logo", file);
+
+      const res = await fetch("/api/business/logo", {
+        method: "POST",
+        body: formData,
+      });
+      const data = (await res.json().catch(() => null)) as
+        | { data?: { logoUrl: string }; error?: string }
+        | null;
+
+      if (!res.ok) {
+        setLogoError(data?.error ?? "Failed to upload logo.");
+        return;
+      }
+
+      if (data?.data?.logoUrl) {
+        setForm((f) => ({ ...f, logoUrl: data.data!.logoUrl }));
+        router.refresh();
+      }
+    } catch {
+      setLogoError("Failed to upload logo.");
+    } finally {
+      setLogoUploading(false);
+      e.target.value = "";
+    }
+  }
+
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
@@ -92,6 +133,7 @@ export function BusinessProfileForm({ business }: { business: Business }) {
           address: form.address.trim() || undefined,
           timezone: form.timezone || undefined,
           currency: form.currency || undefined,
+          logoUrl: form.logoUrl.trim() || null,
           latitude: form.latitude.trim() ? Number(form.latitude) : null,
           longitude: form.longitude.trim() ? Number(form.longitude) : null,
           windguruSpotId: form.windguruSpotId.trim() || null,
@@ -281,6 +323,63 @@ export function BusinessProfileForm({ business }: { business: Business }) {
               </select>
             </div>
           </div>
+        </div>
+      </div>
+
+      <div className="space-y-4">
+        <h3 className="text-sm font-medium text-muted-foreground">
+          Branding
+        </h3>
+        <div className="grid gap-2">
+          <Label htmlFor="logoUrl">Public logo URL</Label>
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => logoInputRef.current?.click()}
+              disabled={logoUploading}
+              className="sm:w-auto"
+            >
+              <Upload className="size-4" />
+              {logoUploading ? "Uploading…" : "Upload logo"}
+            </Button>
+            <input
+              ref={logoInputRef}
+              type="file"
+              accept="image/jpeg,image/jpg,image/png,image/webp,image/*"
+              className="hidden"
+              onChange={handleLogoUpload}
+            />
+            <p className="text-xs text-muted-foreground">
+              JPEG, PNG or WebP. Max 4MB.
+            </p>
+          </div>
+          <Input
+            id="logoUrl"
+            type="url"
+            value={form.logoUrl}
+            onChange={(e) => setForm((f) => ({ ...f, logoUrl: e.target.value }))}
+            placeholder="https://example.com/your-logo.png"
+          />
+          <p className="text-xs text-muted-foreground">
+            Upload a logo for live hosting, or paste an existing image URL. Used on
+            Premium white-label public booking and confirmation pages.
+          </p>
+          {logoError && (
+            <div className="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">
+              {logoError}
+            </div>
+          )}
+          {form.logoUrl.trim() ? (
+            <div className="rounded-lg border bg-card p-3">
+              <p className="mb-2 text-xs text-muted-foreground">Preview</p>
+              <img
+                src={form.logoUrl}
+                alt="Business logo preview"
+                className="h-12 w-auto max-w-full object-contain"
+              />
+            </div>
+          ) : null}
         </div>
       </div>
 

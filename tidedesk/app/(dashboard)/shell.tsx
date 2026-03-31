@@ -3,6 +3,7 @@
 import type { ReactNode } from "react";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { DashboardProvider } from "@/lib/dashboard-context";
+import type { BusinessBrand } from "@/lib/dashboard-context";
 import { DashboardTopbar, TrialBanner } from "@/components/dashboard";
 import type { Tier } from "@/lib/tiers";
 import type { TierInfo } from "@/lib/dashboard-context";
@@ -13,16 +14,23 @@ export function DashboardShell({
   sidebar,
   tier,
   tierInfo,
+  businessBrand,
 }: {
   children: ReactNode;
   sidebar: ReactNode;
   tier: Tier;
   tierInfo: TierInfo | null;
+  businessBrand: BusinessBrand | null;
 }) {
   const [open, setOpen] = useState(false);
 
   return (
-    <DashboardProvider closeSidebar={() => setOpen(false)} tier={tier} tierInfo={tierInfo}>
+    <DashboardProvider
+      closeSidebar={() => setOpen(false)}
+      tier={tier}
+      tierInfo={tierInfo}
+      businessBrand={businessBrand}
+    >
       <div className="flex min-h-dvh min-w-0 bg-background">
         <div className="hidden md:fixed md:inset-y-0 md:flex">{sidebar}</div>
 

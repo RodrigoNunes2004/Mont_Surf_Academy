@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Menu, LogOut, User } from "lucide-react";
+import { useDashboardContext } from "@/lib/dashboard-context";
 
 function useMounted() {
   return useSyncExternalStore(
@@ -26,8 +27,14 @@ function useMounted() {
 export function DashboardTopbar({ onOpenNav }: { onOpenNav: () => void }) {
   const mounted = useMounted();
   const { data } = useSession();
+  const ctx = useDashboardContext();
   const name = data?.user?.name ?? "User";
   const email = data?.user?.email ?? "";
+  const businessBrand = ctx?.businessBrand;
+  const showWhiteLabel = !!businessBrand?.whiteLabelEnabled;
+  const dashboardLabel = showWhiteLabel
+    ? `${businessBrand?.name ?? "Business"} Dashboard`
+    : "TideDesk Dashboard";
   const initials = name
     .split(" ")
     .filter(Boolean)
@@ -36,7 +43,7 @@ export function DashboardTopbar({ onOpenNav }: { onOpenNav: () => void }) {
     .join("");
 
   return (
-    <header className="flex h-14 min-h-14 shrink-0 items-center justify-between border-b border-sky-700/30 bg-gradient-to-r from-sky-500 to-sky-600 px-3 sm:px-4 text-white">
+    <header className="flex h-14 min-h-14 shrink-0 items-center justify-between border-b border-sky-700/30 bg-linear-to-r from-sky-500 to-sky-600 px-3 sm:px-4 text-white">
       <div className="flex min-w-0 flex-1 items-center gap-2">
         <Button
           variant="ghost"
@@ -48,7 +55,7 @@ export function DashboardTopbar({ onOpenNav }: { onOpenNav: () => void }) {
           <Menu className="size-5" />
         </Button>
         <div className="truncate text-sm font-medium">
-          <span className="hidden sm:inline">TideDesk </span>Dashboard
+          {dashboardLabel}
         </div>
       </div>
 

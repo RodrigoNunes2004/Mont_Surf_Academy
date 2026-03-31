@@ -9,10 +9,17 @@ export type TierInfo = {
   isTrialing: boolean;
 };
 
+export type BusinessBrand = {
+  name: string;
+  logoUrl: string | null;
+  whiteLabelEnabled: boolean;
+};
+
 type DashboardContextValue = {
   closeSidebar: () => void;
   tier: Tier | null;
   tierInfo: TierInfo | null;
+  businessBrand: BusinessBrand | null;
 };
 
 const DashboardContext = createContext<DashboardContextValue | null>(null);
@@ -26,14 +33,16 @@ export function DashboardProvider({
   closeSidebar,
   tier,
   tierInfo,
+  businessBrand,
 }: {
   children: ReactNode;
   closeSidebar: () => void;
   tier: Tier | null;
   tierInfo: TierInfo | null;
+  businessBrand: BusinessBrand | null;
 }) {
   return (
-    <DashboardContext.Provider value={{ closeSidebar, tier, tierInfo }}>
+    <DashboardContext.Provider value={{ closeSidebar, tier, tierInfo, businessBrand }}>
       {children}
     </DashboardContext.Provider>
   );

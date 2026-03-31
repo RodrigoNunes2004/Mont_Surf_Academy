@@ -67,7 +67,7 @@ Cross-reference only; detail lives in IMPLEMENTATION_TRACKER.
 
 | Sprint | Scope | Status | Notes |
 |--------|--------|--------|--------|
-| **15** | White label | Planned | Custom domain, remove TideDesk branding ([IMPLEMENTATION_TRACKER.md](./IMPLEMENTATION_TRACKER.md)) |
+| **15** | White label | In progress | Premium public booking + confirmation pages now support school branding/logo; custom domain remains next ([IMPLEMENTATION_TRACKER.md](./IMPLEMENTATION_TRACKER.md)) |
 | **16** | FareHarbor integration | Planned | External booking sync |
 
 **Premium gaps still open:** Offline mode (PWA) — tracked in IMPLEMENTATION_TRACKER Premium table, not assigned a sprint number there.

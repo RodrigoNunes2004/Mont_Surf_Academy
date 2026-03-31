@@ -38,22 +38,34 @@ const fullNav: { href: string; label: string; icon: typeof LayoutDashboard; role
 export function DashboardSidebar({ role }: { role: UserRole }) {
   const pathname = usePathname();
   const ctx = useDashboardContext();
+  const businessBrand = ctx?.businessBrand;
+  const showWhiteLabel = !!businessBrand?.whiteLabelEnabled;
+  const brandName = showWhiteLabel ? businessBrand?.name ?? "Dashboard" : "TideDesk";
+  const brandLogo = showWhiteLabel ? businessBrand?.logoUrl : null;
 
   return (
     <aside className="flex h-full min-h-0 w-full min-w-0 flex-col overflow-hidden border-r border-slate-800 bg-slate-900 text-slate-200 md:w-64">
       <div className="flex min-w-0 shrink-0 items-center justify-between gap-2 px-4 py-4">
         <Link href="/dashboard" className="flex min-w-0 flex-1 items-center gap-2">
-          <Image
-            src="/TD_logo.png"
-            alt="TideDesk"
-            width={48}
-            height={48}
-            className="h-10 w-10 shrink-0 sm:h-12 sm:w-12"
-          />
-          <span className="truncate font-semibold tracking-tight">TideDesk</span>
+          {brandLogo ? (
+            <img
+              src={brandLogo}
+              alt={`${brandName} logo`}
+              className="h-10 w-10 shrink-0 rounded-md object-contain sm:h-12 sm:w-12"
+            />
+          ) : (
+            <Image
+              src="/TD_logo.png"
+              alt="TideDesk"
+              width={48}
+              height={48}
+              className="h-10 w-10 shrink-0 sm:h-12 sm:w-12"
+            />
+          )}
+          <span className="truncate font-semibold tracking-tight">{brandName}</span>
         </Link>
         <Badge variant="secondary" className="shrink-0 text-xs bg-slate-800 text-slate-300">
-          Internal
+          {showWhiteLabel ? "Admin" : "Internal"}
         </Badge>
       </div>
       <Separator className="shrink-0 bg-slate-700" />

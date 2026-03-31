@@ -1,5 +1,7 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
+import { getBusinessTier } from "@/lib/tiers/get-business-tier";
+import { hasFeature } from "@/lib/tiers";
 import { PublicBookingForm } from "@/components/book";
 import Image from "next/image";
 import Link from "next/link";
@@ -25,21 +27,26 @@ export default async function PublicBookingPage({ params, searchParams }: Props)
       name: true,
       slug: true,
       location: true,
+      logoUrl: true,
     },
   });
 
   if (!business) notFound();
+  const whiteLabelEnabled = hasFeature(
+    await getBusinessTier(business.id),
+    "white-label"
+  );
 
   return (
     <div
-      className={`min-h-screen bg-gradient-to-b from-slate-50 to-white dark:from-slate-950 dark:to-slate-900 ${isEmbed ? "py-2" : ""}`}
+      className={`min-h-screen bg-linear-to-b from-slate-50 to-white dark:from-slate-950 dark:to-slate-900 ${isEmbed ? "py-2" : ""}`}
     >
       <header
         className={`border-b border-slate-200/80 dark:border-slate-800 ${isEmbed ? "px-2 py-2" : ""}`}
       >
         <div className="mx-auto flex max-w-2xl items-center justify-between px-4 py-4">
-          <div className="flex items-center gap-3">
-            {!isEmbed && (
+          <div className="flex min-w-0 items-center gap-3">
+            {!whiteLabelEnabled && !isEmbed && (
               <>
                 <Link href="/" className="flex items-center gap-2">
                   <Image
@@ -53,7 +60,14 @@ export default async function PublicBookingPage({ params, searchParams }: Props)
                 <span className="text-slate-400 dark:text-slate-500">/</span>
               </>
             )}
-            <span className="font-semibold text-slate-800 dark:text-slate-200">
+            {whiteLabelEnabled && business.logoUrl ? (
+              <img
+                src={business.logoUrl}
+                alt={`${business.name} logo`}
+                className="h-10 w-auto max-w-[140px] shrink-0 object-contain"
+              />
+            ) : null}
+            <span className="truncate font-semibold text-slate-800 dark:text-slate-200">
               {business.name}
             </span>
           </div>
