@@ -1,6 +1,7 @@
 "use client";
 
 import type { UserRole } from "@prisma/client";
+import { useCallback, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
@@ -42,16 +43,19 @@ export function DashboardSidebar({ role }: { role: UserRole }) {
   const showWhiteLabel = !!businessBrand?.whiteLabelEnabled;
   const brandName = showWhiteLabel ? businessBrand?.name ?? "Dashboard" : "TideDesk";
   const brandLogo = showWhiteLabel ? businessBrand?.logoUrl : null;
+  const [logoError, setLogoError] = useState(false);
+  const handleLogoError = useCallback(() => setLogoError(true), []);
 
   return (
     <aside className="flex h-full min-h-0 w-full min-w-0 flex-col overflow-hidden border-r border-slate-800 bg-slate-900 text-slate-200 md:w-64">
       <div className="flex min-w-0 shrink-0 items-center justify-between gap-2 px-4 py-4">
         <Link href="/dashboard" className="flex min-w-0 flex-1 items-center gap-2">
-          {brandLogo ? (
+          {brandLogo && !logoError ? (
             <img
               src={brandLogo}
               alt={`${brandName} logo`}
               className="h-10 w-10 shrink-0 rounded-md object-contain sm:h-12 sm:w-12"
+              onError={handleLogoError}
             />
           ) : (
             <Image

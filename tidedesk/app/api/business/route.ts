@@ -24,6 +24,19 @@ const ALLOWED_KEYS = [
 
 const VALID_PAYMENT_METHODS = Object.values(PaymentMethod);
 
+function sanitizeLogoUrl(url: string | null): string | null {
+  if (!url) return null;
+  try {
+    const parsed = new URL(url);
+    if (parsed.hostname === "localhost" || parsed.hostname === "127.0.0.1") {
+      return parsed.pathname;
+    }
+  } catch {
+    // Already a relative path
+  }
+  return url;
+}
+
 function toSafeBusinessResponse(
   business: Awaited<ReturnType<typeof prisma.business.findUnique>>
 ) {
@@ -39,7 +52,7 @@ function toSafeBusinessResponse(
     address: business.address,
     timezone: business.timezone,
     currency: business.currency,
-    logoUrl: business.logoUrl,
+    logoUrl: sanitizeLogoUrl(business.logoUrl),
     latitude: business.latitude != null ? Number(business.latitude) : null,
     longitude: business.longitude != null ? Number(business.longitude) : null,
     windguruSpotId: business.windguruSpotId,

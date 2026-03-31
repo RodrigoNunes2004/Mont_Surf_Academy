@@ -5,6 +5,19 @@ import { prisma } from "@/lib/prisma";
 import { DashboardSidebar } from "@/components/dashboard/sidebar";
 import { DashboardShell } from "./shell";
 
+function sanitizeLogoUrl(url: string | null): string | null {
+  if (!url) return null;
+  try {
+    const parsed = new URL(url);
+    if (parsed.hostname === "localhost" || parsed.hostname === "127.0.0.1") {
+      return parsed.pathname;
+    }
+  } catch {
+    // Already a relative path — fine
+  }
+  return url;
+}
+
 export default async function DashboardLayout({
   children,
 }: {
@@ -29,7 +42,7 @@ export default async function DashboardLayout({
       tierInfo={tierInfo}
       businessBrand={{
         name: business.name,
-        logoUrl: business.logoUrl,
+        logoUrl: sanitizeLogoUrl(business.logoUrl),
         whiteLabelEnabled,
       }}
     >

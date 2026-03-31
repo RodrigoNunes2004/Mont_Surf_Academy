@@ -3,6 +3,19 @@ import { prisma } from "@/lib/prisma";
 import { getBusinessTier } from "@/lib/tiers/get-business-tier";
 import { hasFeature } from "@/lib/tiers";
 
+function sanitizeLogoUrl(url: string | null): string | null {
+  if (!url) return null;
+  try {
+    const parsed = new URL(url);
+    if (parsed.hostname === "localhost" || parsed.hostname === "127.0.0.1") {
+      return parsed.pathname;
+    }
+  } catch {
+    // Already a relative path
+  }
+  return url;
+}
+
 /**
  * GET /api/public/schools/[slug]
  * Public endpoint – returns business info and lessons for the booking page.
@@ -84,7 +97,7 @@ export async function GET(
       location: business.location,
       timezone: business.timezone ?? "Pacific/Auckland",
       currency: business.currency ?? "NZD",
-      logoUrl: business.logoUrl,
+      logoUrl: sanitizeLogoUrl(business.logoUrl),
       whiteLabelEnabled,
       canAcceptPayments: Boolean(
         business.stripeAccountId && business.chargesEnabled && business.payoutsEnabled
