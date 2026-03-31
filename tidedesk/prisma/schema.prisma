@@ -60,6 +60,7 @@ model Business {
   apiKeys        ApiKey[]
   webhookEndpoints WebhookEndpoint[]
   dailyAnalytics DailyAnalytics[]
+  syncLogs       SyncLog[]
 }
 
 model DailyAnalytics {
@@ -461,6 +462,7 @@ enum NotificationType {
   PAYMENT_RECEIPT
   TRIAL_ENDING
   INSTRUCTOR_INVITE
+  FAREHARBOR_SYNC
 }
 
 enum NotificationChannel {
@@ -521,6 +523,38 @@ model WebhookEndpoint {
   updatedAt   DateTime @updatedAt
 
   @@index([businessId])
+}
+
+model SyncLog {
+  id          String     @id @default(cuid())
+  business    Business   @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  businessId  String
+
+  provider    IntegrationProvider
+  direction   SyncDirection @default(INBOUND)
+  status      SyncStatus    @default(RUNNING)
+
+  itemsSynced   Int       @default(0)
+  itemsSkipped  Int       @default(0)
+  itemsFailed   Int       @default(0)
+  error         String?   @db.Text
+
+  startedAt   DateTime  @default(now())
+  finishedAt  DateTime?
+
+  @@index([businessId, provider])
+  @@index([businessId, startedAt])
+}
+
+enum SyncDirection {
+  INBOUND
+  OUTBOUND
+}
+
+enum SyncStatus {
+  RUNNING
+  COMPLETED
+  FAILED
 }
 
 model SurfSpot {

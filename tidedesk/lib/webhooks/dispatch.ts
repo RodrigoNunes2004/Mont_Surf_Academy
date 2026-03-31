@@ -1,7 +1,7 @@
 import { createHmac } from "crypto";
 import { prisma } from "@/lib/prisma";
 
-export const WEBHOOK_EVENTS = ["booking.created", "payment.succeeded"] as const;
+export const WEBHOOK_EVENTS = ["booking.created", "booking.synced", "payment.succeeded"] as const;
 export type WebhookEvent = (typeof WEBHOOK_EVENTS)[number];
 
 /** Build payload for booking.created - call after booking is created. */

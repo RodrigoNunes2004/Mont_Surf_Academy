@@ -23,15 +23,25 @@ export async function GET(req: NextRequest) {
   });
 
   // Return without raw config (never expose API keys)
-  const safe = integrations.map((i) => ({
-    id: i.id,
-    provider: i.provider,
-    isActive: i.isActive,
-    lastSyncAt: i.lastSyncAt,
-    hasConfig: !!i.config,
-    createdAt: i.createdAt,
-    updatedAt: i.updatedAt,
-  }));
+  const safe = integrations.map((i) => {
+    let companyShortname: string | undefined;
+    if (i.config) {
+      try {
+        const parsed = JSON.parse(i.config) as ConfigPayload;
+        companyShortname = parsed.companyShortname;
+      } catch { /* ignore */ }
+    }
+    return {
+      id: i.id,
+      provider: i.provider,
+      isActive: i.isActive,
+      lastSyncAt: i.lastSyncAt,
+      hasConfig: !!i.config,
+      companyShortname,
+      createdAt: i.createdAt,
+      updatedAt: i.updatedAt,
+    };
+  });
 
   return NextResponse.json({ data: safe });
 }
@@ -39,6 +49,7 @@ export async function GET(req: NextRequest) {
 type ConfigPayload = {
   apiKey?: string;
   webhookSecret?: string;
+  companyShortname?: string;
 };
 
 export async function PUT(req: NextRequest) {
@@ -52,7 +63,7 @@ export async function PUT(req: NextRequest) {
   const forbidden = rejectIfInstructor(role);
   if (forbidden) return forbidden;
 
-  let body: { provider?: string; apiKey?: string; webhookSecret?: string; isActive?: boolean };
+  let body: { provider?: string; apiKey?: string; webhookSecret?: string; isActive?: boolean; companyShortname?: string };
   try {
     body = (await req.json()) as typeof body;
   } catch {
@@ -86,6 +97,9 @@ export async function PUT(req: NextRequest) {
   }
   if (typeof body.webhookSecret === "string" && body.webhookSecret.trim()) {
     merged.webhookSecret = encrypt(body.webhookSecret.trim());
+  }
+  if (typeof body.companyShortname === "string") {
+    merged.companyShortname = body.companyShortname.trim() || undefined;
   }
 
   const isActive = typeof body.isActive === "boolean" ? body.isActive : true;

@@ -69,7 +69,7 @@ Cross-reference only; detail lives in IMPLEMENTATION_TRACKER.
 |--------|--------|--------|--------|
 | **15** | White label | ✅ Done | Branding (logo/name) on public booking + confirmation; custom domain with Vercel Domains API, DNS verification, middleware rewrite, Settings UI (Premium-gated) |
 | **15b** | Offline PWA | ✅ Done | Service worker, manifest, offline fallback, IndexedDB cache, background sync, install prompt |
-| **16** | FareHarbor integration | Planned | External booking sync |
+| **16** | FareHarbor integration | ✅ Done | FH API client, inbound webhooks, cron poll (4h), SyncLog, Settings UI (test/sync/logs), booking.synced event |
 
 ---
 
@@ -92,6 +92,7 @@ Cross-reference only; detail lives in IMPLEMENTATION_TRACKER.
 | Deposits / API / Beach / WindGuru | Done | IMPLEMENTATION_TRACKER sprints 10–12, 14 |
 | White label / Custom domain | Done | Branding on public pages + custom domain (Sprint 15) |
 | Offline PWA            | Done        | Service worker, manifest, offline fallback, IndexedDB, background sync, install prompt (Sprint 15b) |
+| FareHarbor integration | Done        | FH API client, inbound webhooks, cron poll (4h), SyncLog, Settings UI, booking.synced event (Sprint 16) |
 
 ---
 
@@ -105,4 +106,6 @@ Cross-reference only; detail lives in IMPLEMENTATION_TRACKER.
 6. ~~**Advanced analytics**~~ — Done (Sprint 13; `/analytics`, DailyAnalytics cron, Premium-gated)
 7. ~~**White label**~~ — Done (Sprint 15; branding + custom domain with Vercel Domains API, DNS verification, middleware rewrite)
 8. ~~**Offline PWA**~~ — Done (Sprint 15b; service worker, manifest, offline fallback, IndexedDB cache, background sync, install prompt)
-9. **FareHarbor** (Sprint 16) — see IMPLEMENTATION_TRACKER priority
+9. ~~**FareHarbor**~~ — Done (Sprint 16; FH API client, inbound webhooks, cron poll, SyncLog, Settings UI, booking.synced event)
+
+**All planned sprints complete. Product maturity: 100% across all tiers.**

@@ -56,9 +56,9 @@ Track what's done vs planned for each plan tier. Aligns with the three pricing c
 | 5 | POS beach mode | ✅ | High | M | Tablet UI for quick rental, check-in, return |
 | 6 | API access | ✅ | High | L | REST API, webhooks; unlocks ecosystem integrations |
 | 7 | White label | ✅ | Low | M | School branding on public pages + custom domain (Vercel Domains API, DNS verification, middleware rewrite, Settings UI) |
-| 8 | Integrations (FareHarbor) | 🔲 | Low | L | External booking sync |
+| 8 | Integrations (FareHarbor) | ✅ | Low | L | FH API client, inbound webhooks, cron poll (4h), dedup via externalReference, SyncLog history, Settings UI (test/sync/logs), booking.synced webhook event |
 
-**Premium:** 7/8 done, 1 planned · **Maturity: ~88%**
+**Premium:** 8/8 done · **Maturity: 100%**
 
 
 ## Recommended Sprint Order
@@ -73,7 +73,7 @@ Based on impact vs difficulty.
 | ~~13~~ | ~~Advanced analytics~~ | ✅ Done | — | — | Revenue by day/lesson, bookings, students, instructors, equipment, alerts |
 | ~~14~~ | ~~WindGuru integration~~ | ✅ Done | — | — | Marine forecast widget on Dashboard, Bookings, Beach; Stormglass data |
 | **15** | White label | ✅ Done | Low | M | Branding + custom domain (Vercel Domains API, DNS, middleware rewrite, Settings UI) |
-| **16** | FareHarbor integration | — | Low | L | External booking imports; more bookings for schools |
+| **16** | FareHarbor integration | ✅ Done | Low | L | FH API client, inbound webhooks, cron poll (4h), SyncLog, Settings UI, booking.synced event |
 
 ---
 
@@ -83,7 +83,7 @@ Based on impact vs difficulty.
 |------|--------|------|
 | Starter | 100% | Core SaaS complete |
 | Pro | 100% | All features complete |
-| Premium | ~88% | API, POS, WindGuru, analytics, white label, offline PWA; remaining: FareHarbor |
+| Premium | 100% | All features complete: API, POS, WindGuru, analytics, white label, offline PWA, FareHarbor |
 
 **Product insight:** TideDesk's strongest differentiator is the combination of **booking + weather intelligence + equipment tracking**. Most booking platforms don't handle surf school logistics — that's the advantage.
 
@@ -115,6 +115,7 @@ Track these to measure SaaS growth:
 - Advanced analytics: /analytics dashboard; revenue by day/lesson, bookings chart, student metrics, instructor labor %, equipment utilization, smart alerts; DailyAnalytics cron; Premium-gated
 - White label custom domain: Business.customDomain/customDomainVerified; Vercel Domains API integration; middleware hostname rewrite; internal resolve-domain API; Custom Domain Settings UI (Premium-gated)
 - Offline PWA: manifest.json, service worker (cache-first for static, network-first for navigation, SWR for API), offline fallback page, IndexedDB API cache layer, background sync queue for offline mutations, install prompt + update prompt + offline banner; icons generated via sharp; Premium-gated conceptually (available to all tiers for installability)
+- FareHarbor integration: FareHarborClient (External API v1); sync service with dedup via Booking.externalReference; inbound webhook route (/api/webhooks/fareharbor) with HMAC verification; cron poll every 4h; SyncLog model for history; test connection + manual sync + company selector in Settings UI; booking.synced outbound webhook event; Premium-gated
 
 ---
 
@@ -124,6 +125,7 @@ Track these to measure SaaS growth:
 |---------|--------|-------|
 | **Custom domain (Sprint 15)** | ✅ | Business.customDomain schema; Vercel Domains API add/remove/verify; middleware custom domain → /book/[slug] rewrite; DNS verification UI in Settings (Premium) |
 | **Offline PWA (Sprint 15b)** | ✅ | manifest.json + generated icons; SW with 3 caching strategies; offline fallback page; IndexedDB API cache; background sync; install/update/offline banner components |
+| **FareHarbor integration (Sprint 16)** | ✅ | FareHarborClient API; sync service (dedup via externalReference); inbound webhooks; cron poll (4h); SyncLog history; Settings UI (test/sync/companies/logs); booking.synced webhook event; Premium-gated |
 | **In-settings upgrade** | ✅ | Settings → Billing: "Subscribe to Premium" when no subscription; no need to log out and use landing page |
 | **Stripe upgrade checkout** | ✅ | POST /api/stripe/checkout/upgrade for logged-in users; links new subscription to existing business |
 | **Subscription webhook** | ✅ | checkout.session.completed (subscription mode) creates/updates Subscription when metadata.businessId present |
@@ -151,3 +153,4 @@ Track these to measure SaaS growth:
 | 2026-03-16 | Advanced analytics: /analytics dashboard; modules/analytics; DailyAnalytics + cron; Premium-gated |
 | 2026-03-31 | Sprint 15: White label custom domain; Business.customDomain/customDomainVerified schema; Vercel Domains API service (add/remove/verify); middleware rewrite for custom domain → /book/[slug]; internal resolve-domain API; Custom Domain settings UI (Premium-gated) |
 | 2026-03-31 | Sprint 15b: Offline PWA; manifest.json + icons; service worker (cache-first/network-first/SWR); offline fallback page; IndexedDB offline data layer; background sync queue; PwaProvider (install prompt, update prompt, offline banner); next.config.ts SW/manifest headers |
+| 2026-03-31 | Sprint 16: FareHarbor integration; FareHarborClient (External API v1); sync engine (dedup via Booking.externalReference fh:{uuid}); inbound webhook /api/webhooks/fareharbor with HMAC; cron /api/cron/fareharbor-sync (4h); SyncLog + SyncDirection + SyncStatus schema; test connection + manual sync + company selector + sync log history in Settings UI; booking.synced outbound webhook event; Premium-gated |
