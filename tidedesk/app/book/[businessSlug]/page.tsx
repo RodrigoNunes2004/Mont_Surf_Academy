@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
+import { sanitizeLogoUrl } from "@/lib/utils";
 import { getBusinessTier } from "@/lib/tiers/get-business-tier";
 import { hasFeature } from "@/lib/tiers";
 import { PublicBookingForm } from "@/components/book";
@@ -60,9 +61,9 @@ export default async function PublicBookingPage({ params, searchParams }: Props)
                 <span className="text-slate-400 dark:text-slate-500">/</span>
               </>
             )}
-            {whiteLabelEnabled && business.logoUrl ? (
+            {whiteLabelEnabled && sanitizeLogoUrl(business.logoUrl) ? (
               <img
-                src={business.logoUrl}
+                src={sanitizeLogoUrl(business.logoUrl)!}
                 alt={`${business.name} logo`}
                 className="h-10 w-auto max-w-[140px] shrink-0 object-contain"
               />

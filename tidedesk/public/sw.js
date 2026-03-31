@@ -1,6 +1,6 @@
 /// <reference lib="webworker" />
 
-const CACHE_VERSION = "v1";
+const CACHE_VERSION = "v2";
 const STATIC_CACHE = `tidedesk-static-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `tidedesk-runtime-${CACHE_VERSION}`;
 const API_CACHE = `tidedesk-api-${CACHE_VERSION}`;

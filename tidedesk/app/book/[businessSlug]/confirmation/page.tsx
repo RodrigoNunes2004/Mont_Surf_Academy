@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { prisma } from "@/lib/prisma";
+import { sanitizeLogoUrl } from "@/lib/utils";
 import { getBusinessTier } from "@/lib/tiers/get-business-tier";
 import { hasFeature } from "@/lib/tiers";
 import { ConfirmationContent } from "@/components/book";
@@ -48,9 +49,9 @@ export default async function ConfirmationPage({ params, searchParams }: Props) 
                   className="h-8 w-auto object-contain"
                 />
               </Link>
-            ) : business.logoUrl ? (
+            ) : sanitizeLogoUrl(business.logoUrl) ? (
               <img
-                src={business.logoUrl}
+                src={sanitizeLogoUrl(business.logoUrl)!}
                 alt={`${business.name} logo`}
                 className="h-10 w-auto max-w-[140px] shrink-0 object-contain"
               />

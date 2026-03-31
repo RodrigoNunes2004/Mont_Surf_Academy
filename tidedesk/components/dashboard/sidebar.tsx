@@ -5,7 +5,7 @@ import { useCallback, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { cn } from "@/lib/utils";
+import { cn, sanitizeLogoUrl } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { useDashboardContext } from "@/lib/dashboard-context";
@@ -42,7 +42,7 @@ export function DashboardSidebar({ role }: { role: UserRole }) {
   const businessBrand = ctx?.businessBrand;
   const showWhiteLabel = !!businessBrand?.whiteLabelEnabled;
   const brandName = showWhiteLabel ? businessBrand?.name ?? "Dashboard" : "TideDesk";
-  const brandLogo = showWhiteLabel ? businessBrand?.logoUrl : null;
+  const brandLogo = showWhiteLabel ? sanitizeLogoUrl(businessBrand?.logoUrl) : null;
   const [logoError, setLogoError] = useState(false);
   const handleLogoError = useCallback(() => setLogoError(true), []);
 

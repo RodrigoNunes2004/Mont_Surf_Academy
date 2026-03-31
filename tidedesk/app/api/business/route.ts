@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { PaymentMethod } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
+import { sanitizeLogoUrl } from "@/lib/utils";
 import { resolveSession, rejectIfInstructor } from "../_lib/tenant";
 
 const ALLOWED_KEYS = [
@@ -23,19 +24,6 @@ const ALLOWED_KEYS = [
 ] as const;
 
 const VALID_PAYMENT_METHODS = Object.values(PaymentMethod);
-
-function sanitizeLogoUrl(url: string | null): string | null {
-  if (!url) return null;
-  try {
-    const parsed = new URL(url);
-    if (parsed.hostname === "localhost" || parsed.hostname === "127.0.0.1") {
-      return parsed.pathname;
-    }
-  } catch {
-    // Already a relative path
-  }
-  return url;
-}
 
 function toSafeBusinessResponse(
   business: Awaited<ReturnType<typeof prisma.business.findUnique>>

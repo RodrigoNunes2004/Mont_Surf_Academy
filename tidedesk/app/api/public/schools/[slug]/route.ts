@@ -1,20 +1,8 @@
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { sanitizeLogoUrl } from "@/lib/utils";
 import { getBusinessTier } from "@/lib/tiers/get-business-tier";
 import { hasFeature } from "@/lib/tiers";
-
-function sanitizeLogoUrl(url: string | null): string | null {
-  if (!url) return null;
-  try {
-    const parsed = new URL(url);
-    if (parsed.hostname === "localhost" || parsed.hostname === "127.0.0.1") {
-      return parsed.pathname;
-    }
-  } catch {
-    // Already a relative path
-  }
-  return url;
-}
 
 /**
  * GET /api/public/schools/[slug]
