@@ -15,7 +15,21 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "TideDesk - Management Software for Surf Schools",
-  description: "Bookings, equipment tracking, instructors and revenue — all in one place.",
+  description:
+    "Bookings, equipment tracking, instructors and revenue — all in one place.",
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "TideDesk",
+  },
+  icons: {
+    icon: "/icons/icon-192.png",
+    apple: "/icons/apple-touch-icon.png",
+  },
+  other: {
+    "mobile-web-app-capable": "yes",
+  },
 };
 
 export const viewport = {
@@ -23,6 +37,7 @@ export const viewport = {
   initialScale: 1,
   maximumScale: 5,
   viewportFit: "cover",
+  themeColor: "#0ea5e9",
 };
 
 export default function RootLayout({

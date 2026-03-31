@@ -51,14 +51,14 @@ Track what's done vs planned for each plan tier. Aligns with the three pricing c
 |---|---------|--------|----------|--------|-------|
 | 1 | Everything in Pro | ✅ | — | — | Inherited |
 | 2 | WindGuru integration | ✅ | Medium | S | Marine forecast (wind/swell) on Dashboard, Bookings, Beach; optional WindGuru spot link |
-| 3 | Offline mode | 🔲 | Medium | L | PWA service worker, work offline |
+| 3 | Offline mode | ✅ | Medium | L | PWA: manifest, service worker (cache-first/network-first/SWR), offline fallback page, IndexedDB API cache, background sync queue, install prompt, offline banner |
 | 4 | Advanced analytics | ✅ | Medium | M | /analytics: revenue, bookings, students, instructors, equipment, alerts |
 | 5 | POS beach mode | ✅ | High | M | Tablet UI for quick rental, check-in, return |
 | 6 | API access | ✅ | High | L | REST API, webhooks; unlocks ecosystem integrations |
 | 7 | White label | ✅ | Low | M | School branding on public pages + custom domain (Vercel Domains API, DNS verification, middleware rewrite, Settings UI) |
 | 8 | Integrations (FareHarbor) | 🔲 | Low | L | External booking sync |
 
-**Premium:** 6/8 done, 2 planned · **Maturity: ~75%**
+**Premium:** 7/8 done, 1 planned · **Maturity: ~88%**
 
 
 ## Recommended Sprint Order
@@ -83,7 +83,7 @@ Based on impact vs difficulty.
 |------|--------|------|
 | Starter | 100% | Core SaaS complete |
 | Pro | 100% | All features complete |
-| Premium | ~75% | API, POS, WindGuru, analytics, white label (custom domain); remaining: offline PWA, FareHarbor |
+| Premium | ~88% | API, POS, WindGuru, analytics, white label, offline PWA; remaining: FareHarbor |
 
 **Product insight:** TideDesk's strongest differentiator is the combination of **booking + weather intelligence + equipment tracking**. Most booking platforms don't handle surf school logistics — that's the advantage.
 
@@ -114,6 +114,7 @@ Track these to measure SaaS growth:
 - WindGuru integration: Marine forecast widget (wind/swell) on Dashboard, Bookings, Beach; optional WindGuru spot ID in Settings; Premium-gated
 - Advanced analytics: /analytics dashboard; revenue by day/lesson, bookings chart, student metrics, instructor labor %, equipment utilization, smart alerts; DailyAnalytics cron; Premium-gated
 - White label custom domain: Business.customDomain/customDomainVerified; Vercel Domains API integration; middleware hostname rewrite; internal resolve-domain API; Custom Domain Settings UI (Premium-gated)
+- Offline PWA: manifest.json, service worker (cache-first for static, network-first for navigation, SWR for API), offline fallback page, IndexedDB API cache layer, background sync queue for offline mutations, install prompt + update prompt + offline banner; icons generated via sharp; Premium-gated conceptually (available to all tiers for installability)
 
 ---
 
@@ -122,6 +123,7 @@ Track these to measure SaaS growth:
 | Feature | Status | Notes |
 |---------|--------|-------|
 | **Custom domain (Sprint 15)** | ✅ | Business.customDomain schema; Vercel Domains API add/remove/verify; middleware custom domain → /book/[slug] rewrite; DNS verification UI in Settings (Premium) |
+| **Offline PWA (Sprint 15b)** | ✅ | manifest.json + generated icons; SW with 3 caching strategies; offline fallback page; IndexedDB API cache; background sync; install/update/offline banner components |
 | **In-settings upgrade** | ✅ | Settings → Billing: "Subscribe to Premium" when no subscription; no need to log out and use landing page |
 | **Stripe upgrade checkout** | ✅ | POST /api/stripe/checkout/upgrade for logged-in users; links new subscription to existing business |
 | **Subscription webhook** | ✅ | checkout.session.completed (subscription mode) creates/updates Subscription when metadata.businessId present |
@@ -148,3 +150,4 @@ Track these to measure SaaS growth:
 | 2026-03-16 | Sprint 13: Advanced analytics; /analytics dashboard; revenue, bookings, students, instructors, equipment, alerts; DailyAnalytics cron; Premium-gated |
 | 2026-03-16 | Advanced analytics: /analytics dashboard; modules/analytics; DailyAnalytics + cron; Premium-gated |
 | 2026-03-31 | Sprint 15: White label custom domain; Business.customDomain/customDomainVerified schema; Vercel Domains API service (add/remove/verify); middleware rewrite for custom domain → /book/[slug]; internal resolve-domain API; Custom Domain settings UI (Premium-gated) |
+| 2026-03-31 | Sprint 15b: Offline PWA; manifest.json + icons; service worker (cache-first/network-first/SWR); offline fallback page; IndexedDB offline data layer; background sync queue; PwaProvider (install prompt, update prompt, offline banner); next.config.ts SW/manifest headers |
