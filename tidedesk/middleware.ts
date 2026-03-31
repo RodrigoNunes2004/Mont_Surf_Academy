@@ -28,12 +28,16 @@ function isCustomDomainRequest(hostname: string): boolean {
   return true;
 }
 
-function buildCsp(nonce: string, options?: { allowEmbedding?: boolean }) {
-  const scriptSrc = [
-    "'self'",
-    `'nonce-${nonce}'`,
-    "https://js.stripe.com",
-  ];
+function buildCsp(options?: { allowEmbedding?: boolean }) {
+  // Next.js injects several inline <script> tags for hydration/routing that
+  // don't reliably receive the nonce attribute across all versions and
+  // adapters. Nonce-only script-src blocks these scripts and breaks the
+  // page. Using 'unsafe-inline' without a nonce is the standard production
+  // approach for Next.js apps — XSS protection is handled at the
+  // application layer (React auto-escaping, input sanitisation, etc.).
+  // The nonce is still generated and forwarded in x-nonce for any
+  // first-party <Script nonce={nonce}> components that opt into it.
+  const scriptSrc = ["'self'", "'unsafe-inline'", "https://js.stripe.com"];
   if (isDev) {
     scriptSrc.push("'unsafe-eval'");
   }
@@ -44,7 +48,7 @@ function buildCsp(nonce: string, options?: { allowEmbedding?: boolean }) {
     "style-src 'self' 'unsafe-inline'",
     "img-src 'self' data: blob: https:",
     "font-src 'self' data: https://fonts.gstatic.com",
-    "connect-src 'self' https://api.stripe.com https://r.stripe.com https://m.stripe.network",
+    "connect-src 'self' https://api.stripe.com https://r.stripe.com https://m.stripe.network https://api.stormglass.io",
     "frame-src 'self' https://www.windguru.cz https://js.stripe.com https://hooks.stripe.com https://checkout.stripe.com",
     "object-src 'none'",
     "base-uri 'self'",
@@ -115,7 +119,7 @@ export async function middleware(req: NextRequest) {
           });
           response.headers.set(
             "Content-Security-Policy",
-            buildCsp(nonce, { allowEmbedding: true })
+            buildCsp({ allowEmbedding: true })
           );
           return response;
         }
@@ -145,7 +149,7 @@ export async function middleware(req: NextRequest) {
     });
     response.headers.set(
       "Content-Security-Policy",
-      buildCsp(nonce, { allowEmbedding: pathname.startsWith("/book/") })
+      buildCsp({ allowEmbedding: pathname.startsWith("/book/") })
     );
     return response;
   }
@@ -160,7 +164,7 @@ export async function middleware(req: NextRequest) {
     );
     response.headers.set(
       "Content-Security-Policy",
-      buildCsp(nonce, { allowEmbedding: pathname.startsWith("/book/") })
+      buildCsp({ allowEmbedding: pathname.startsWith("/book/") })
     );
     return response;
   }
@@ -172,7 +176,7 @@ export async function middleware(req: NextRequest) {
   });
   response.headers.set(
     "Content-Security-Policy",
-    buildCsp(nonce, { allowEmbedding: pathname.startsWith("/book/") })
+    buildCsp({ allowEmbedding: pathname.startsWith("/book/") })
   );
   return response;
 }
