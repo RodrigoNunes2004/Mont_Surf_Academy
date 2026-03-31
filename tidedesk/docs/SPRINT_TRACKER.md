@@ -1,6 +1,6 @@
 # TideDesk — Sprint Tracker
 
-**Last updated:** March 24, 2026
+**Last updated:** March 31, 2026
 
 _Aligned with [IMPLEMENTATION_TRACKER.md](./IMPLEMENTATION_TRACKER.md) (Premium roadmap sprints 10–16)._
 
@@ -67,7 +67,7 @@ Cross-reference only; detail lives in IMPLEMENTATION_TRACKER.
 
 | Sprint | Scope | Status | Notes |
 |--------|--------|--------|--------|
-| **15** | White label | In progress | Premium public booking + confirmation pages now support school branding/logo; custom domain remains next ([IMPLEMENTATION_TRACKER.md](./IMPLEMENTATION_TRACKER.md)) |
+| **15** | White label | ✅ Done | Branding (logo/name) on public booking + confirmation; custom domain with Vercel Domains API, DNS verification, middleware rewrite, Settings UI (Premium-gated) |
 | **16** | FareHarbor integration | Planned | External booking sync |
 
 **Premium gaps still open:** Offline mode (PWA) — tracked in IMPLEMENTATION_TRACKER Premium table, not assigned a sprint number there.
@@ -91,6 +91,7 @@ Cross-reference only; detail lives in IMPLEMENTATION_TRACKER.
 | Stripe polish   | Done        | Inline errors, currency formatting, payment hints |
 | Advanced analytics | Done   | `/analytics`, DailyAnalytics cron, Premium (Sprint 13) |
 | Deposits / API / Beach / WindGuru | Done | IMPLEMENTATION_TRACKER sprints 10–12, 14 |
+| White label / Custom domain | Done | Branding on public pages + custom domain (Sprint 15) |
 
 ---
 
@@ -102,4 +103,5 @@ Cross-reference only; detail lives in IMPLEMENTATION_TRACKER.
 4. ~~**Stripe payments polish**~~ — Done (inline errors, currency, hints, canAcceptPayments)
 5. ~~**Upgrade from Settings**~~ — Done (Subscribe to Premium in Billing when no subscription; /api/stripe/checkout/upgrade; webhook links subscription to existing business)
 6. ~~**Advanced analytics**~~ — Done (Sprint 13; `/analytics`, DailyAnalytics cron, Premium-gated)
-7. **White label** (Sprint 15) or **FareHarbor** (Sprint 16) — see IMPLEMENTATION_TRACKER priority; **Offline PWA** remains Premium backlog
+7. ~~**White label**~~ — Done (Sprint 15; branding + custom domain with Vercel Domains API, DNS verification, middleware rewrite)
+8. **FareHarbor** (Sprint 16) or **Offline PWA** — see IMPLEMENTATION_TRACKER priority

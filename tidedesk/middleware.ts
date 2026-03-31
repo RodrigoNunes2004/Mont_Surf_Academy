@@ -8,6 +8,26 @@ import {
 
 const isDev = process.env.NODE_ENV !== "production";
 
+function getAppHostname(): string {
+  const url =
+    process.env.NEXT_PUBLIC_APP_URL ??
+    process.env.NEXTAUTH_URL ??
+    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "");
+  try {
+    return new URL(url).hostname;
+  } catch {
+    return "localhost";
+  }
+}
+
+function isCustomDomainRequest(hostname: string): boolean {
+  const appHost = getAppHostname();
+  if (hostname === appHost) return false;
+  if (hostname === "localhost" || hostname === "127.0.0.1") return false;
+  if (hostname.endsWith(".vercel.app")) return false;
+  return true;
+}
+
 function buildCsp(nonce: string, options?: { allowEmbedding?: boolean }) {
   const scriptSrc = [
     "'self'",
@@ -44,6 +64,70 @@ function buildCsp(nonce: string, options?: { allowEmbedding?: boolean }) {
 
 export async function middleware(req: NextRequest) {
   const pathname = req.nextUrl.pathname;
+  const hostname = req.headers.get("host")?.split(":")[0] ?? "localhost";
+
+  // ------------------------------------------------------------------
+  // Custom domain rewrite: resolve host → business slug, rewrite path
+  // Skip internal API to avoid loops and skip static/API paths.
+  // ------------------------------------------------------------------
+  if (
+    isCustomDomainRequest(hostname) &&
+    !pathname.startsWith("/api/") &&
+    !pathname.startsWith("/_next/") &&
+    !pathname.startsWith("/favicon")
+  ) {
+    const resolveUrl = new URL(
+      `/api/internal/resolve-domain?host=${encodeURIComponent(hostname)}`,
+      req.url
+    );
+
+    try {
+      const res = await fetch(resolveUrl, {
+        headers: { "x-internal-secret": process.env.CRON_SECRET ?? "" },
+      });
+
+      if (res.ok) {
+        const json = (await res.json()) as {
+          data?: { slug: string; businessId: string };
+        };
+        const slug = json?.data?.slug;
+
+        if (slug) {
+          let rewritePath: string;
+          if (pathname === "/" || pathname === "") {
+            rewritePath = `/book/${slug}`;
+          } else if (pathname === "/confirmation" || pathname.startsWith("/confirmation")) {
+            rewritePath = `/book/${slug}/confirmation`;
+          } else {
+            rewritePath = `/book/${slug}${pathname}`;
+          }
+
+          const rewriteUrl = new URL(rewritePath, req.url);
+          rewriteUrl.search = req.nextUrl.search;
+
+          const nonce = btoa(crypto.randomUUID());
+          const requestHeaders = new Headers(req.headers);
+          requestHeaders.set("x-nonce", nonce);
+          requestHeaders.set("x-custom-domain", hostname);
+
+          const response = NextResponse.rewrite(rewriteUrl, {
+            request: { headers: requestHeaders },
+          });
+          response.headers.set(
+            "Content-Security-Policy",
+            buildCsp(nonce, { allowEmbedding: true })
+          );
+          return response;
+        }
+      }
+    } catch {
+      // Domain resolution failed; fall through to normal routing
+    }
+  }
+
+  // ------------------------------------------------------------------
+  // Standard flow: CSP + rate limiting
+  // ------------------------------------------------------------------
   const requestHeaders = new Headers(req.headers);
   const nonce = btoa(crypto.randomUUID());
   requestHeaders.set("x-nonce", nonce);

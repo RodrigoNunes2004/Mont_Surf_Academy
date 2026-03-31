@@ -55,10 +55,10 @@ Track what's done vs planned for each plan tier. Aligns with the three pricing c
 | 4 | Advanced analytics | ✅ | Medium | M | /analytics: revenue, bookings, students, instructors, equipment, alerts |
 | 5 | POS beach mode | ✅ | High | M | Tablet UI for quick rental, check-in, return |
 | 6 | API access | ✅ | High | L | REST API, webhooks; unlocks ecosystem integrations |
-| 7 | White label | 🔶 | Low | M | Premium public booking + confirmation pages use school branding/logo; custom domain still planned |
+| 7 | White label | ✅ | Low | M | School branding on public pages + custom domain (Vercel Domains API, DNS verification, middleware rewrite, Settings UI) |
 | 8 | Integrations (FareHarbor) | 🔲 | Low | L | External booking sync |
 
-**Premium:** 5/8 done, 2 planned · **Maturity: ~63%**
+**Premium:** 6/8 done, 2 planned · **Maturity: ~75%**
 
 
 ## Recommended Sprint Order
@@ -72,7 +72,7 @@ Based on impact vs difficulty.
 | ~~12~~ | ~~POS beach mode~~ | ✅ Done | High | M | `/beach`: today bookings check-in, active rentals return, quick rental |
 | ~~13~~ | ~~Advanced analytics~~ | ✅ Done | — | — | Revenue by day/lesson, bookings, students, instructors, equipment, alerts |
 | ~~14~~ | ~~WindGuru integration~~ | ✅ Done | — | — | Marine forecast widget on Dashboard, Bookings, Beach; Stormglass data |
-| **15** | White label | 🔶 Partial | Low | M | Public booking branding delivered; custom domain still pending |
+| **15** | White label | ✅ Done | Low | M | Branding + custom domain (Vercel Domains API, DNS, middleware rewrite, Settings UI) |
 | **16** | FareHarbor integration | — | Low | L | External booking imports; more bookings for schools |
 
 ---
@@ -83,7 +83,7 @@ Based on impact vs difficulty.
 |------|--------|------|
 | Starter | 100% | Core SaaS complete |
 | Pro | 100% | All features complete |
-| Premium | ~63% | API, POS beach mode, WindGuru, advanced analytics; roadmap for white label |
+| Premium | ~75% | API, POS, WindGuru, analytics, white label (custom domain); remaining: offline PWA, FareHarbor |
 
 **Product insight:** TideDesk's strongest differentiator is the combination of **booking + weather intelligence + equipment tracking**. Most booking platforms don't handle surf school logistics — that's the advantage.
 
@@ -113,6 +113,7 @@ Track these to measure SaaS growth:
 - POS beach mode: `/beach` tablet UI; check-in today bookings, return active rentals, quick rental (Premium-gated)
 - WindGuru integration: Marine forecast widget (wind/swell) on Dashboard, Bookings, Beach; optional WindGuru spot ID in Settings; Premium-gated
 - Advanced analytics: /analytics dashboard; revenue by day/lesson, bookings chart, student metrics, instructor labor %, equipment utilization, smart alerts; DailyAnalytics cron; Premium-gated
+- White label custom domain: Business.customDomain/customDomainVerified; Vercel Domains API integration; middleware hostname rewrite; internal resolve-domain API; Custom Domain Settings UI (Premium-gated)
 
 ---
 
@@ -120,6 +121,7 @@ Track these to measure SaaS growth:
 
 | Feature | Status | Notes |
 |---------|--------|-------|
+| **Custom domain (Sprint 15)** | ✅ | Business.customDomain schema; Vercel Domains API add/remove/verify; middleware custom domain → /book/[slug] rewrite; DNS verification UI in Settings (Premium) |
 | **In-settings upgrade** | ✅ | Settings → Billing: "Subscribe to Premium" when no subscription; no need to log out and use landing page |
 | **Stripe upgrade checkout** | ✅ | POST /api/stripe/checkout/upgrade for logged-in users; links new subscription to existing business |
 | **Subscription webhook** | ✅ | checkout.session.completed (subscription mode) creates/updates Subscription when metadata.businessId present |
@@ -145,3 +147,4 @@ Track these to measure SaaS growth:
 | 2026-03-11 | Weather widget: empty-state fallback, API message when Stormglass returns empty; PREMIUM_TESTING_CHECKLIST |
 | 2026-03-16 | Sprint 13: Advanced analytics; /analytics dashboard; revenue, bookings, students, instructors, equipment, alerts; DailyAnalytics cron; Premium-gated |
 | 2026-03-16 | Advanced analytics: /analytics dashboard; modules/analytics; DailyAnalytics + cron; Premium-gated |
+| 2026-03-31 | Sprint 15: White label custom domain; Business.customDomain/customDomainVerified schema; Vercel Domains API service (add/remove/verify); middleware rewrite for custom domain → /book/[slug]; internal resolve-domain API; Custom Domain settings UI (Premium-gated) |

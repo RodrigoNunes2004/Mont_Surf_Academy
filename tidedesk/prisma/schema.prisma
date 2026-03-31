@@ -35,6 +35,10 @@ model Business {
 
   windguruSpotId        String?  // WindGuru spot ID for "View on WindGuru" link (e.g. 53 for Mount Maunganui)
 
+  // Custom domain (Premium white-label)
+  customDomain          String?  @unique  // e.g. "book.mountsurf.co.nz"
+  customDomainVerified  Boolean  @default(false)
+
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 

@@ -12,6 +12,7 @@ import { StripeConnectSection } from "@/components/settings/stripe-connect-secti
 import { OnlineBookingSection } from "@/components/settings/online-booking-section";
 import { ApiKeysSection } from "@/components/settings/api-keys-section";
 import { WebhookEndpointsSection } from "@/components/settings/webhook-endpoints-section";
+import { CustomDomainSection } from "@/components/settings/custom-domain-section";
 import { FeatureGate } from "@/lib/tiers/feature-gate";
 import { prisma } from "@/lib/prisma";
 import { Building2, CreditCard, DollarSign, Key, Plug, User, Users } from "lucide-react";
@@ -128,6 +129,29 @@ export default async function SettingsPage({ searchParams }: { searchParams: Sea
             businessHoursOpen={(business as { businessHoursOpen?: number | null }).businessHoursOpen ?? null}
             businessHoursClose={(business as { businessHoursClose?: number | null }).businessHoursClose ?? null}
           />
+          <FeatureGate
+            feature="white-label"
+            fallback={
+              <Card>
+                <CardHeader>
+                  <CardTitle>Custom Domain</CardTitle>
+                  <CardDescription>
+                    Use your own domain for the public booking page. Available on Premium.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Link
+                    href="/pricing"
+                    className="text-sm text-primary hover:underline"
+                  >
+                    Upgrade to Premium →
+                  </Link>
+                </CardContent>
+              </Card>
+            }
+          >
+            <CustomDomainSection />
+          </FeatureGate>
           <Card>
             <CardHeader>
               <CardTitle>Business Profile</CardTitle>
